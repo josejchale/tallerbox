@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.tallerbox.app.screens.MainScreen
 import com.tallerbox.app.screens.RegistroClienteScreen
+import com.tallerbox.app.screens.RegistroVehiculoScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -15,6 +16,9 @@ fun AppNavigation(navController: NavHostController) {
         }
         composable("registro_cliente") {
             RegistroClienteScreen()
+        }
+        composable(route= "registro_vehiculo"){
+            RegistroVehiculoScreen()
         }
     }
 }

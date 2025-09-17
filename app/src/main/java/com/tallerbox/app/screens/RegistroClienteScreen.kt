@@ -24,7 +24,10 @@ fun RegistroClienteScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Registro de Cliente", style = MaterialTheme.typography.headlineSmall)
+        Text("Registro de Cliente",
+            style = MaterialTheme.typography.headlineSmall,
+
+        )
 
         OutlinedTextField(
             value = nombreCompleto,

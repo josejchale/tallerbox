@@ -64,6 +64,7 @@ fun MainScreen(navController: NavController) {
 
                     Button(onClick = {
                         // Navegar a Registro Vehículo (futuro)
+                        navController.navigate(route = "registro_vehiculo")
                     }) {
                         Text("Registrar Vehículo")
                     }
