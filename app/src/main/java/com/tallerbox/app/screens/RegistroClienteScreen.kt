@@ -1,13 +1,24 @@
 package com.tallerbox.app.screens
-import com.tallerbox.app.model.Cliente
+import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import androidx.navigation.NavController
+
+import com.tallerbox.app.model.cliente.ClienteEntity
+//import com.tallerbox.app.model.cliente.Cliente
+import com.tallerbox.app.db.AppDatabase
 
 @Composable
-fun RegistroClienteScreen() {
+fun RegistroClienteScreen(navController: NavController) {
     var nombreCompleto by remember { mutableStateOf("") }
     var calle by remember { mutableStateOf("") }
     var numeroCasa by remember { mutableStateOf("") }
@@ -17,6 +28,10 @@ fun RegistroClienteScreen() {
     var telefono by remember { mutableStateOf("") }
 
     var errorTelefono by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val db = AppDatabase.getDatabase(context)
+    val clienteDao = db.clienteDao()
 
     Column(
         modifier = Modifier
@@ -79,7 +94,8 @@ fun RegistroClienteScreen() {
             },
             label = { Text("Teléfono (10 dígitos)") },
             isError = errorTelefono,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
 
         if (errorTelefono) {
@@ -93,16 +109,29 @@ fun RegistroClienteScreen() {
         Button(
             onClick = {
                 if (!errorTelefono && nombreCompleto.isNotBlank()) {
-                    val cliente = Cliente(
-                        nombreCompleto,
-                        calle,
-                        numeroCasa.ifBlank { null },
-                        cruzamientos,
-                        estado,
-                        municipio,
-                        telefono
+                    val cliente = ClienteEntity(
+                        nombreCompleto = nombreCompleto,
+                        calle = calle,
+                        numeroCasa = numeroCasa.ifBlank { null },
+                        cruzamientos = cruzamientos,
+                        estado = estado,
+                        municipio = municipio,
+                        telefono = telefono
                     )
-                    // Aquí puedes guardar el cliente o navegar
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        clienteDao.insertar(cliente)
+
+                    //Muestra un toast y navega al registro de vehiculos
+                        launch(Dispatchers.Main) {
+                            Toast.makeText(
+                                context,
+                                "Cliente registrado con éxito",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            navController.navigate("registro_vehiculo")
+                        }
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth()

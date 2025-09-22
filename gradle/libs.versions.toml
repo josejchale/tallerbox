@@ -40,6 +40,9 @@ lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-view
 coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 # Signature Pad
 signature-pad = { group = "com.github.gcacace", name = "signature-pad", version.ref = "signaturepad" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version = "2.6.1" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version = "2.6.1" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version = "2.6.1" }
 
 
 [plugins]

@@ -1,6 +1,6 @@
 package com.tallerbox.app.screens
 
-import com.tallerbox.app.model.Vehiculo
+import com.tallerbox.app.model.vehiculo.Vehiculo
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

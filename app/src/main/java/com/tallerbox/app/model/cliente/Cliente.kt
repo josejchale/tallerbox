@@ -1,4 +1,4 @@
-package com.tallerbox.app.model
+package com.tallerbox.app.model.cliente
 
 data class Cliente(
     val nombreCompleto: String,

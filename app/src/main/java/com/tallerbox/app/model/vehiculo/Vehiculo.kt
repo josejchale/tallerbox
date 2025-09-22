@@ -1,4 +1,4 @@
-package com.tallerbox.app.model
+package com.tallerbox.app.model.vehiculo
 
 data class Vehiculo(
     val marca: String,
