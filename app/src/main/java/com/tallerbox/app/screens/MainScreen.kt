@@ -69,6 +69,11 @@ fun MainScreen(navController: NavController) {
                         Text("Registrar Vehículo")
                     }
                 }
+                Button(onClick={
+                    navController.navigate(route="lista_clientes")
+                }){
+                    Text(text="ver lista de clientes")
+                }
             }
         }
     }

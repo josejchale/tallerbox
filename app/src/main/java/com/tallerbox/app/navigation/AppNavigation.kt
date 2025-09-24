@@ -5,8 +5,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.tallerbox.app.screens.MainScreen
-import com.tallerbox.app.screens.RegistroClienteScreen
-import com.tallerbox.app.screens.RegistroVehiculoScreen
+import com.tallerbox.app.screens.clientes.ListaClientesScreen
+import com.tallerbox.app.screens.clientes.RegistroClienteScreen
+import com.tallerbox.app.screens.vehiculo.RegistroVehiculoScreen
 @Composable
 fun AppNavigation(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "main") {
@@ -16,8 +17,19 @@ fun AppNavigation(navController: NavHostController) {
         composable("registro_cliente") {
             RegistroClienteScreen(navController)
         }
+
+        composable("lista_clientes") {
+            ListaClientesScreen(navController)
+        }
+        composable("registro_vehiculo/{clienteId}") { backStackEntry ->
+            val clienteId = backStackEntry.arguments?.getString("clienteId")?.toIntOrNull()
+            RegistroVehiculoScreen(navController, clienteId)
+        }
+
+
         composable(route="registro_vehiculo"){
-            RegistroVehiculoScreen()
+            val clienteId = null
+            RegistroVehiculoScreen(navController, clienteId)
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.tallerbox.app.screens
+package com.tallerbox.app.screens.clientes
 import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.*
@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,10 +17,14 @@ import androidx.navigation.NavController
 import com.tallerbox.app.model.cliente.ClienteEntity
 //import com.tallerbox.app.model.cliente.Cliente
 import com.tallerbox.app.db.AppDatabase
+import com.tallerbox.app.viewmodel.cliente.ClienteViewModel
+import com.tallerbox.app.viewmodel.cliente.ClienteViewModelFactory
 
 @Composable
-fun RegistroClienteScreen(navController: NavController) {
-    var nombreCompleto by remember { mutableStateOf("") }
+fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = viewModel(factory = ClienteViewModelFactory(
+    LocalContext.current
+)
+)) {    var nombreCompleto by remember { mutableStateOf("") }
     var calle by remember { mutableStateOf("") }
     var numeroCasa by remember { mutableStateOf("") }
     var cruzamientos by remember { mutableStateOf("") }
