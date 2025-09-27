@@ -6,10 +6,17 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.tallerbox.app.model.cliente.ClienteDao
 import com.tallerbox.app.model.cliente.ClienteEntity
+import com.tallerbox.app.model.vehiculo.VehiculoDao
+import com.tallerbox.app.model.vehiculo.VehiculoEntity
 
-@Database(entities = [ClienteEntity::class], version = 1)
+@Database(entities = [
+    ClienteEntity::class,
+    VehiculoEntity :: class
+                     ], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun clienteDao(): ClienteDao
+    abstract fun vehiculoDao(): VehiculoDao
+
 
     companion object {
         @Volatile

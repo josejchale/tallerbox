@@ -11,7 +11,5 @@ interface ClienteDao {
     suspend fun insertar(cliente: ClienteEntity)
 
     @Query("SELECT * FROM clientes")
-    suspend fun obtenerTodos(): List<ClienteEntity>
-    @Query("SELECT * FROM clientes")
     fun obtenerTodosFlow(): Flow<List<ClienteEntity>>
 }
