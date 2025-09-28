@@ -74,6 +74,11 @@ fun MainScreen(navController: NavController) {
                 }){
                     Text(text="ver lista de clientes")
                 }
+                Button(onClick={
+                    navController.navigate(route="lista_vehiculo")
+                }){
+                    Text(text="ver lista de vehiculos")
+                }
             }
         }
     }

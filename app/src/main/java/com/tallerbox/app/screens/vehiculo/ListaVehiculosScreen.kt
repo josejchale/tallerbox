@@ -12,13 +12,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tallerbox.app.model.cliente.ClienteEntity
-import com.tallerbox.app.viewmodel.cliente.ClienteViewModel
-import com.tallerbox.app.viewmodel.cliente.ClienteViewModelFactory
+import com.tallerbox.app.model.vehiculo.VehiculoEntity
+import com.tallerbox.app.viewmodel.vehiculo.VehiculoViewModelFactory
 import androidx.navigation.NavController
+import com.tallerbox.app.viewmodel.vehiculo.VehiculoViewModel
 
 @Composable
-fun ListaClientesScreen(navController: NavController, vm: ClienteViewModel = viewModel(factory = ClienteViewModelFactory(LocalContext.current))) {
-    val clientes = vm.clientes.collectAsState().value
+fun ListaVehiculosScreen(navController: NavController, vm: VehiculoViewModel = viewModel(factory = VehiculoViewModelFactory(LocalContext.current))) {
+    val vehiculo = vm.vehiculo.collectAsState().value
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -27,14 +28,14 @@ fun ListaClientesScreen(navController: NavController, vm: ClienteViewModel = vie
         Text("Clientes registrados", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(12.dp))
 
-        if (clientes.isEmpty()) {
-            Text("No hay clientes registrados", style = MaterialTheme.typography.bodyMedium)
+        if (vehiculo.isEmpty()) {
+            Text("No hay vehiculos registrados", style = MaterialTheme.typography.bodyMedium)
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(clientes) { cliente ->
-                    ClienteCard(cliente = cliente, onClick = {
-                        // ejemplo: navegar a detalle o registrar vehículo pasando id
-                        navController.navigate("registro_vehiculo/${cliente.id}")
+                items(vehiculo) { vehiculo ->
+                    VehiculoCard(vehiculo = vehiculo, onClick = {
+                        // ejemplo: navegar a detalle o registrar vehículo pasando igit d
+                        navController.navigate("lista_vehiculo")
                     })
                 }
             }
@@ -43,16 +44,18 @@ fun ListaClientesScreen(navController: NavController, vm: ClienteViewModel = vie
 }
 
 @Composable
-private fun ClienteCard(cliente: ClienteEntity, onClick: () -> Unit) {
+private fun VehiculoCard(vehiculo: VehiculoEntity, onClick: () -> Unit) {
     Card(modifier = Modifier
         .fillMaxWidth()
         .clickable(onClick = onClick)) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text(text = cliente.nombreCompleto, style = MaterialTheme.typography.titleMedium)
+            Text(text = "${vehiculo.marca} ${vehiculo.modelo}, ${vehiculo.ano}", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = "Tel: ${cliente.telefono}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Color: ${vehiculo.color}", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = "${cliente.calle} ${cliente.numeroCasa ?: ""}, ${cliente.municipio}, ${cliente.estado}", style = MaterialTheme.typography.bodySmall)
+            Text(text = "Color: ${vehiculo.vin}", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(text = "Color: ${vehiculo.placa?: ""}", style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

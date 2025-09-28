@@ -1,23 +1,23 @@
-package com.tallerbox.app.viewmodel.cliente
+package com.tallerbox.app.viewmodel.vehiculo
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tallerbox.app.model.cliente.ClienteEntity
-import com.tallerbox.app.repository.cliente.ClienteRepository
+import com.tallerbox.app.model.vehiculo.VehiculoEntity
+import com.tallerbox.app.repository.vehiculo.VehiculoRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class ClienteViewModel(private val repo: ClienteRepository) : ViewModel() {
+class VehiculoViewModel(private val repo: VehiculoRepository) : ViewModel() {
 
-    val clientes: StateFlow<List<ClienteEntity>> =
+    val vehiculo: StateFlow<List<VehiculoEntity>> =
         repo.obtenerTodosFlow()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun insertarCliente(cliente: ClienteEntity, onComplete: (() -> Unit)? = null) {
+    fun insertarVehiculo(vehiculo: VehiculoEntity, onComplete: (() -> Unit)? = null) {
         viewModelScope.launch {
-            repo.insertar(cliente)
+            repo.insertar(vehiculo)
             onComplete?.invoke()
         }
     }
