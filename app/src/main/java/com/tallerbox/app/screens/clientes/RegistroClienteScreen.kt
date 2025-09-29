@@ -15,11 +15,13 @@ import kotlinx.coroutines.launch
 import androidx.navigation.NavController
 
 import com.tallerbox.app.model.cliente.ClienteEntity
-//import com.tallerbox.app.model.cliente.Cliente
 import com.tallerbox.app.db.AppDatabase
 import com.tallerbox.app.viewmodel.cliente.ClienteViewModel
 import com.tallerbox.app.viewmodel.cliente.ClienteViewModelFactory
+import com.tallerbox.app.utils.estados
+import com.tallerbox.app.utils.municipiosPorEstado
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = viewModel(factory = ClienteViewModelFactory(
     LocalContext.current
@@ -29,8 +31,13 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
     var numeroCasa by remember { mutableStateOf("") }
     var calle1 by remember { mutableStateOf("") }
     var calle2 by remember { mutableStateOf("") }
-    var estado by remember { mutableStateOf("") }
-    var municipio by remember { mutableStateOf("") }
+    var estadoSeleccionado by remember { mutableStateOf("") }
+    var municipioSeleccionado by remember { mutableStateOf("") }
+
+    var expandedEstado by remember { mutableStateOf(false) }
+    var expandedMunicipio by remember { mutableStateOf(false) }
+
+    val municipiosDisponibles = municipiosPorEstado[estadoSeleccionado] ?: emptyList()
     var telefono by remember { mutableStateOf("") }
 
     var errorTelefono by remember { mutableStateOf(false) }
@@ -85,19 +92,66 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
             modifier = Modifier.fillMaxWidth()
         )
 
-        OutlinedTextField(
-            value = estado,
-            onValueChange = { estado = it },
-            label = { Text("Estado") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        ExposedDropdownMenuBox(
+            expanded = expandedEstado,
+            onExpandedChange = { expandedEstado = !expandedEstado }
+        ) {
+            OutlinedTextField(
+                value = estadoSeleccionado,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Estado") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+            )
+            ExposedDropdownMenu(
+                expanded = expandedEstado,
+                onDismissRequest = { expandedEstado = false }
+            ) {
+                estados.forEach { estado ->
+                    DropdownMenuItem(
+                        text = { Text(estado) },
+                        onClick = {
+                            estadoSeleccionado = estado
+                            municipioSeleccionado = "" // reset municipio
+                            expandedEstado = false
+                        }
+                    )
+                }
+            }
+        }
 
-        OutlinedTextField(
-            value = municipio,
-            onValueChange = { municipio = it },
-            label = { Text("Municipio") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        if (estadoSeleccionado.isNotBlank()) {
+            ExposedDropdownMenuBox(
+                expanded = expandedMunicipio,
+                onExpandedChange = { expandedMunicipio = !expandedMunicipio }
+            ) {
+                OutlinedTextField(
+                    value = municipioSeleccionado,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Municipio") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedMunicipio,
+                    onDismissRequest = { expandedMunicipio = false }
+                ) {
+                    municipiosDisponibles.forEach { municipio ->
+                        DropdownMenuItem(
+                            text = { Text(municipio) },
+                            onClick = {
+                                municipioSeleccionado = municipio
+                                expandedMunicipio = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
 
         OutlinedTextField(
             value = telefono,
@@ -128,8 +182,8 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
                         numeroCasa = numeroCasa.ifBlank { null },
                         calle1 = calle1,
                         calle2 = calle2,
-                        estado = estado,
-                        municipio = municipio,
+                        estado = estadoSeleccionado,
+                        municipio = municipioSeleccionado,
                         telefono = telefono
                     )
 
