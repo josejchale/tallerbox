@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tallerbox.app.model.cliente.ClienteEntity
 import com.tallerbox.app.model.vehiculo.VehiculoEntity
 import com.tallerbox.app.viewmodel.vehiculo.VehiculoViewModelFactory
 import androidx.navigation.NavController
@@ -23,9 +22,9 @@ fun ListaVehiculosScreen(navController: NavController, vm: VehiculoViewModel = v
 
     Column(modifier = Modifier
         .fillMaxSize()
-        .padding(16.dp)) {
+        .padding(top= 60.dp)) {
 
-        Text("Clientes registrados", style = MaterialTheme.typography.headlineSmall)
+        Text("Vehiculos registrados", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(12.dp))
 
         if (vehiculo.isEmpty()) {
@@ -53,9 +52,9 @@ private fun VehiculoCard(vehiculo: VehiculoEntity, onClick: () -> Unit) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(text = "Color: ${vehiculo.color}", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = "Color: ${vehiculo.vin}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "VIN: ${vehiculo.vin}", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = "Color: ${vehiculo.placa?: ""}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Placa: ${vehiculo.placa?: ""}", style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

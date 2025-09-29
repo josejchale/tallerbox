@@ -27,7 +27,8 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
 )) {    var nombreCompleto by remember { mutableStateOf("") }
     var calle by remember { mutableStateOf("") }
     var numeroCasa by remember { mutableStateOf("") }
-    var cruzamientos by remember { mutableStateOf("") }
+    var calle1 by remember { mutableStateOf("") }
+    var calle2 by remember { mutableStateOf("") }
     var estado by remember { mutableStateOf("") }
     var municipio by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
@@ -41,7 +42,7 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(top = 60.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Registro de Cliente",
@@ -71,8 +72,15 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
         )
 
         OutlinedTextField(
-            value = cruzamientos,
-            onValueChange = { cruzamientos = it },
+            value = calle1,
+            onValueChange = { calle1 = it },
+            label = { Text("Cruzamientos") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = calle2,
+            onValueChange = { calle2 = it },
             label = { Text("Cruzamientos") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -118,7 +126,8 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
                         nombreCompleto = nombreCompleto,
                         calle = calle,
                         numeroCasa = numeroCasa.ifBlank { null },
-                        cruzamientos = cruzamientos,
+                        calle1 = calle1,
+                        calle2 = calle2,
                         estado = estado,
                         municipio = municipio,
                         telefono = telefono

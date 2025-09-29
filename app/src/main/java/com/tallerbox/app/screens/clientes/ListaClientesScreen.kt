@@ -22,7 +22,7 @@ fun ListaClientesScreen(navController: NavController, vm: ClienteViewModel = vie
 
     Column(modifier = Modifier
         .fillMaxSize()
-        .padding(16.dp)) {
+        .padding(top = 60.dp)) {
 
         Text("Clientes registrados", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(12.dp))
@@ -52,7 +52,7 @@ private fun ClienteCard(cliente: ClienteEntity, onClick: () -> Unit) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(text = "Tel: ${cliente.telefono}", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = "${cliente.calle} ${cliente.numeroCasa ?: ""}, ${cliente.municipio}, ${cliente.estado}", style = MaterialTheme.typography.bodySmall)
+            Text(text = "${cliente.calle}  ${cliente.numeroCasa ?: ""}, entre calles ${cliente.calle1} y ${cliente.calle2} ${cliente.municipio}, ${cliente.estado}", style = MaterialTheme.typography.bodySmall)
         }
     }
 }

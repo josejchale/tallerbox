@@ -9,7 +9,8 @@ data class ClienteEntity(
     val nombreCompleto: String,
     val calle: String,
     val numeroCasa: String?,
-    val cruzamientos: String,
+    val calle1: String,
+    val calle2: String,
     val estado: String,
     val municipio: String,
     val telefono: String
