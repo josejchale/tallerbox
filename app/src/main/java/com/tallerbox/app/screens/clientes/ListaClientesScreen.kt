@@ -52,7 +52,7 @@ private fun ClienteCard(cliente: ClienteEntity, onClick: () -> Unit) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(text = "Tel: ${cliente.telefono}", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = "${cliente.calle}  ${cliente.numeroCasa ?: ""}, entre calles ${cliente.calle1} y ${cliente.calle2} ${cliente.municipio}, ${cliente.estado}", style = MaterialTheme.typography.bodySmall)
+            Text(text = "Calle ${cliente.calle},  ${cliente.numeroCasa ?: ""}, entre calles ${cliente.calle1} y ${cliente.calle2}, ${cliente.municipio}, ${cliente.estado}", style = MaterialTheme.typography.bodySmall)
         }
     }
 }

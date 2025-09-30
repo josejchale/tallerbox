@@ -49,7 +49,7 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 60.dp),
+            .padding(60.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Registro de Cliente",
@@ -81,14 +81,14 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
         OutlinedTextField(
             value = calle1,
             onValueChange = { calle1 = it },
-            label = { Text("Cruzamientos") },
+            label = { Text("Calle 1") },
             modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
             value = calle2,
             onValueChange = { calle2 = it },
-            label = { Text("Cruzamientos") },
+            label = { Text("Calle 2") },
             modifier = Modifier.fillMaxWidth()
         )
 
