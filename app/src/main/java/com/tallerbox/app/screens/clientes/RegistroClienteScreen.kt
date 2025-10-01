@@ -97,6 +97,10 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
                 modifier = Modifier.weight(1f)
             )
         }
+        if (errorCalle) {
+            Text("Este campo no puede estar vacío", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
+
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(
@@ -177,6 +181,9 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
                     }
                 }
             }
+        }
+        if (errorEstado || errorMunicipio) {
+            Text("Este campo no puede estar vacío", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         }
 
         OutlinedTextField(

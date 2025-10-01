@@ -58,6 +58,9 @@ fun RegistroVehiculoScreen(navController: NavHostController, clienteId: Int?) {
             isError = errorMarca,
             modifier = Modifier.fillMaxWidth()
         )
+        if (errorMarca) {
+        Text("Este campo no puede estar vacío", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
 
         OutlinedTextField(
             value = modelo,
@@ -69,6 +72,9 @@ fun RegistroVehiculoScreen(navController: NavHostController, clienteId: Int?) {
             isError=errorModelo,
             modifier = Modifier.fillMaxWidth()
         )
+        if (errorModelo) {
+            Text("Este campo no puede estar vacío", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
 
         OutlinedTextField(
             value = ano,
@@ -80,6 +86,9 @@ fun RegistroVehiculoScreen(navController: NavHostController, clienteId: Int?) {
             isError = errorAno,
             modifier = Modifier.fillMaxWidth()
         )
+        if (errorAno) {
+            Text("Este campo no puede estar vacío", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
 
         OutlinedTextField(
             value = color,
@@ -98,6 +107,9 @@ fun RegistroVehiculoScreen(navController: NavHostController, clienteId: Int?) {
             isError = errorVin,
             modifier = Modifier.fillMaxWidth()
         )
+        if (errorVin) {
+            Text("Este campo no puede estar vacío", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
 
         OutlinedTextField(
             value = placa,
