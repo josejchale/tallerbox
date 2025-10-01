@@ -259,7 +259,7 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
                 confirmButton = {
                     TextButton(onClick = {
                         mostrarDialogoCancelar = false
-                        navController.popBackStack() // ✅ regresa sin guardar
+                        navController.popBackStack()
                     }) {
                         Text("Sí, salir")
                     }
