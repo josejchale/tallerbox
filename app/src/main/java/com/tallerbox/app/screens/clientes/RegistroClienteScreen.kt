@@ -13,7 +13,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.navigation.NavController
-
 import com.tallerbox.app.model.cliente.ClienteEntity
 import com.tallerbox.app.db.AppDatabase
 import com.tallerbox.app.viewmodel.cliente.ClienteViewModel
@@ -33,23 +32,30 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
     var calle2 by remember { mutableStateOf("") }
     var estadoSeleccionado by remember { mutableStateOf("") }
     var municipioSeleccionado by remember { mutableStateOf("") }
-
     var expandedEstado by remember { mutableStateOf(false) }
     var expandedMunicipio by remember { mutableStateOf(false) }
-
     val municipiosDisponibles = municipiosPorEstado[estadoSeleccionado] ?: emptyList()
     var telefono by remember { mutableStateOf("") }
 
+    //Errores de campos vacios
+
     var errorTelefono by remember { mutableStateOf(false) }
+    var errorNombre by remember { mutableStateOf(false) }
+    var errorCalle by remember { mutableStateOf(false) }
+    var errorEstado by remember { mutableStateOf(false) }
+    var errorMunicipio by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val db = AppDatabase.getDatabase(context)
     val clienteDao = db.clienteDao()
+    var mostrarDialogoCancelar by remember { mutableStateOf(false) }
+
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(60.dp),
+            .padding(horizontal = 20.dp)
+            .padding(top=60.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Registro de Cliente",
@@ -59,38 +65,54 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
 
         OutlinedTextField(
             value = nombreCompleto,
-            onValueChange = { nombreCompleto = it },
+            onValueChange = {
+                nombreCompleto = it
+                errorNombre = it.isBlank()
+            },
             label = { Text("Nombre completo") },
+            isError = errorNombre,
             modifier = Modifier.fillMaxWidth()
         )
+        if (errorNombre) {
+            Text("Este campo no puede estar vacío", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
 
-        OutlinedTextField(
-            value = calle,
-            onValueChange = { calle = it },
-            label = { Text("Calle") },
-            modifier = Modifier.fillMaxWidth()
-        )
 
-        OutlinedTextField(
-            value = numeroCasa,
-            onValueChange = { numeroCasa = it },
-            label = { Text("Número de casa (opcional)") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(
+                value = calle,
+                onValueChange = {
+                    calle = it
+                    errorCalle = it.isBlank()
+                },
+                label = { Text("Calle") },
+                isError = errorCalle,
+                modifier = Modifier.weight(1f)
+            )
 
-        OutlinedTextField(
-            value = calle1,
-            onValueChange = { calle1 = it },
-            label = { Text("Calle 1") },
-            modifier = Modifier.fillMaxWidth()
-        )
+            OutlinedTextField(
+                value = numeroCasa,
+                onValueChange = { numeroCasa = it },
+                label = { Text("No.") },
+                modifier = Modifier.weight(1f)
+            )
+        }
 
-        OutlinedTextField(
-            value = calle2,
-            onValueChange = { calle2 = it },
-            label = { Text("Calle 2") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(
+                value = calle1,
+                onValueChange = { calle1 = it },
+                label = { Text("Calle 1") },
+                modifier = Modifier.weight(1f)
+            )
+            OutlinedTextField(
+                value = calle2,
+                onValueChange = { calle2 = it },
+                label = { Text("Calle 2") },
+                modifier = Modifier.weight(1f)
+            )
+        }
+
 
         ExposedDropdownMenuBox(
             expanded = expandedEstado,
@@ -101,10 +123,12 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Estado") },
+                isError = errorEstado,
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor()
             )
+
             ExposedDropdownMenu(
                 expanded = expandedEstado,
                 onDismissRequest = { expandedEstado = false }
@@ -132,10 +156,12 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Municipio") },
+                    isError = errorMunicipio,
                     modifier = Modifier
                         .fillMaxWidth()
                         .menuAnchor()
                 )
+
                 ExposedDropdownMenu(
                     expanded = expandedMunicipio,
                     onDismissRequest = { expandedMunicipio = false }
@@ -173,38 +199,78 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
             )
         }
 
-        Button(
-            onClick = {
-                if (!errorTelefono && nombreCompleto.isNotBlank()) {
-                    val cliente = ClienteEntity(
-                        nombreCompleto = nombreCompleto,
-                        calle = calle,
-                        numeroCasa = numeroCasa.ifBlank { null },
-                        calle1 = calle1,
-                        calle2 = calle2,
-                        estado = estadoSeleccionado,
-                        municipio = municipioSeleccionado,
-                        telefono = telefono
-                    )
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedButton(
+                onClick = { mostrarDialogoCancelar = true },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Cancelar")
+            }
 
-                    CoroutineScope(Dispatchers.IO).launch {
-                        clienteDao.insertar(cliente)
+            Button(
+                onClick = {
+                        errorNombre = nombreCompleto.isBlank()
+                        errorCalle = calle.isBlank()
+                        errorEstado = estadoSeleccionado.isBlank()
+                        errorMunicipio = municipioSeleccionado.isBlank()
+                        errorTelefono = telefono.length != 10 || !telefono.all { it.isDigit() }
 
-                    //Muestra un toast y navega al registro de vehiculos
-                        launch(Dispatchers.Main) {
-                            Toast.makeText(
-                                context,
-                                "Cliente registrado con éxito",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            navController.navigate("registro_vehiculo")
-                        }
+                        val camposValidos = listOf(
+                            !errorNombre,
+                            !errorCalle,
+                            !errorEstado,
+                            !errorMunicipio,
+                            !errorTelefono
+                        ).all { it }
+
+                        if (camposValidos) {
+                            val cliente = ClienteEntity(
+                                nombreCompleto = nombreCompleto,
+                                calle = calle,
+                                numeroCasa = numeroCasa.ifBlank { null },
+                                calle1 = calle1,
+                                calle2 = calle2,
+                                estado = estadoSeleccionado,
+                                municipio = municipioSeleccionado,
+                                telefono = telefono
+                            )
+
+                            CoroutineScope(Dispatchers.IO).launch {
+                                clienteDao.insertar(cliente)
+                                launch(Dispatchers.Main) {
+                                    Toast.makeText(context, "Cliente registrado con éxito", Toast.LENGTH_SHORT).show()
+                                    navController.navigate("registro_vehiculo")
+                                }
+                            }
+                    }
+
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Guardar Cliente")
+            }
+        }
+
+        if (mostrarDialogoCancelar) {
+            AlertDialog(
+                onDismissRequest = { mostrarDialogoCancelar = false },
+                title = { Text("¿Salir sin guardar?") },
+                text = { Text("¿Está seguro de cerrar esta ventana y descartar los datos del formulario?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        mostrarDialogoCancelar = false
+                        navController.popBackStack() // ✅ regresa sin guardar
+                    }) {
+                        Text("Sí, salir")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { mostrarDialogoCancelar = false }) {
+                        Text("No")
                     }
                 }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Guardar Cliente")
+            )
         }
+
     }
 }

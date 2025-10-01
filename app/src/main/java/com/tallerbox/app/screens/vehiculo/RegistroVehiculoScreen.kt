@@ -1,7 +1,6 @@
 package com.tallerbox.app.screens.vehiculo
 
 import android.widget.Toast
-import com.tallerbox.app.model.vehiculo.Vehiculo
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -10,11 +9,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.tallerbox.app.db.AppDatabase
-import com.tallerbox.app.model.vehiculo.VehiculoDao
 import com.tallerbox.app.model.vehiculo.VehiculoEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -39,7 +36,7 @@ fun RegistroVehiculoScreen(navController: NavHostController, clienteId: Int?) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(all = 16.dp),
+            .padding(all = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(text = "Registro de Motos", style = MaterialTheme.typography.headlineSmall)

@@ -22,7 +22,7 @@ fun ListaVehiculosScreen(navController: NavController, vm: VehiculoViewModel = v
 
     Column(modifier = Modifier
         .fillMaxSize()
-        .padding(top= 60.dp)) {
+        .padding(top= 20.dp)) {
 
         Text("Vehiculos registrados", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(12.dp))

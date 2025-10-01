@@ -11,8 +11,8 @@ import com.tallerbox.app.model.vehiculo.VehiculoEntity
 
 @Database(entities = [
     ClienteEntity::class,
-    VehiculoEntity :: class
-                     ], version = 1)
+    VehiculoEntity::class
+                     ], version = 2)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun clienteDao(): ClienteDao
     abstract fun vehiculoDao(): VehiculoDao
@@ -28,7 +28,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "tallerbox_db"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }
