@@ -15,6 +15,8 @@ fun AppNavigation(navController: NavHostController) {
         composable("main") {
             MainScreen(navController)
         }
+
+        //Registro de cliente
         composable("registro_cliente") {
             RegistroClienteScreen(navController)
         }
@@ -23,7 +25,7 @@ fun AppNavigation(navController: NavHostController) {
             ListaClientesScreen(navController)
         }
 
-
+        //registro de vehiculo
         composable("registro_vehiculo/{clienteId}") { backStackEntry ->
             val clienteId = backStackEntry.arguments?.getString("clienteId")?.toIntOrNull()
             RegistroVehiculoScreen(navController, clienteId)

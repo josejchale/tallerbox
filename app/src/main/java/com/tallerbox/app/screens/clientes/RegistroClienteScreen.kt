@@ -231,7 +231,7 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
                         ).all { it }
 
                         if (camposValidos) {
-                            val cliente = ClienteEntity(
+                            val nuevoCliente = ClienteEntity(
                                 nombreCompleto = nombreCompleto,
                                 calle = calle,
                                 numeroCasa = numeroCasa.ifBlank { null },
@@ -243,10 +243,18 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
                             )
 
                             CoroutineScope(Dispatchers.IO).launch {
-                                clienteDao.insertar(cliente)
-                                launch(Dispatchers.Main) {
-                                    Toast.makeText(context, "Cliente registrado con éxito", Toast.LENGTH_SHORT).show()
-                                    navController.navigate("registro_vehiculo")
+                                try {
+                                    val newIdLong = clienteDao.insertar(nuevoCliente) // devuelve Long
+                                    val newId = newIdLong.toInt() // convierte a Int
+                                    launch(Dispatchers.Main) {
+                                        Toast.makeText(context, "Cliente registrado", Toast.LENGTH_SHORT).show()
+                                        // Navega a RegistroVehiculo con el id recién creado
+                                        navController.navigate("registro_vehiculo/$newId")
+                                    }
+                                } catch (e: Exception) {
+                                    launch(Dispatchers.Main) {
+                                        Toast.makeText(context, "Error al guardar cliente", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                             }
                     }

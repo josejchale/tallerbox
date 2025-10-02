@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ClienteDao {
     @Insert
-    suspend fun insertar(cliente: ClienteEntity)
+    suspend fun insertar(cliente: ClienteEntity): Long
 
     @Query("SELECT * FROM clientes")
     fun obtenerTodosFlow(): Flow<List<ClienteEntity>>
