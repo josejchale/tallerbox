@@ -66,7 +66,7 @@ fun MainScreen(navController: NavController) {
                 Text("¿Qué quieres hacer hoy?", style = MaterialTheme.typography.titleMedium)
 
                 Button(onClick = {
-                    // Navegar a Nueva Orden (futuro)
+                    navController.navigate("lista_clientes")
                 }) {
                     Text("Nueva Orden de Servicio")
                 }

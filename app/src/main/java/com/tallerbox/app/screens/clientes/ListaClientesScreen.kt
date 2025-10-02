@@ -1,5 +1,6 @@
 package com.tallerbox.app.screens.clientes
 
+import android.app.Application
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,7 +18,7 @@ import com.tallerbox.app.viewmodel.cliente.ClienteViewModelFactory
 import androidx.navigation.NavController
 
 @Composable
-fun ListaClientesScreen(navController: NavController, vm: ClienteViewModel = viewModel(factory = ClienteViewModelFactory(LocalContext.current))) {
+fun ListaClientesScreen(navController: NavController, vm: ClienteViewModel = viewModel(factory = ClienteViewModelFactory(LocalContext.current.applicationContext as Application))) {
     val clientes = vm.clientes.collectAsState().value
 
     Column(modifier = Modifier

@@ -97,7 +97,8 @@ fun RegistroOrdenScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(top = 60.dp)
+            .padding(horizontal = 20.dp)
             .verticalScroll(scroll),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
