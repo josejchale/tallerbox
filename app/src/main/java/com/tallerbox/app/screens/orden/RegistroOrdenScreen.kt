@@ -281,7 +281,7 @@ fun RegistroOrdenScreen(
                 CoroutineScope(Dispatchers.IO).launch {
                     val newId = ordenDao.insertar(orden)
                     launch(Dispatchers.Main) {
-                        Toast.makeText(context, "Orden guardada (id=$newId)", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Orden guardada", Toast.LENGTH_SHORT).show()
                         navController.navigate("detalle_orden/$newId")
                     }
                 }
