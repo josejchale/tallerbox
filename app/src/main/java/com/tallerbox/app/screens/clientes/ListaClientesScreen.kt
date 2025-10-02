@@ -22,7 +22,9 @@ fun ListaClientesScreen(navController: NavController, vm: ClienteViewModel = vie
 
     Column(modifier = Modifier
         .fillMaxSize()
-        .padding(top = 60.dp)) {
+        .padding(top=60.dp)
+        .padding(horizontal=20.dp),
+    ) {
 
         Text("Clientes registrados", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(12.dp))
@@ -34,10 +36,21 @@ fun ListaClientesScreen(navController: NavController, vm: ClienteViewModel = vie
                 items(clientes) { cliente ->
                     ClienteCard(cliente = cliente, onClick = {
                         // ejemplo: navegar a detalle o registrar vehículo pasando id
-                        navController.navigate("lista_vehiculo/{clienteId}")
+                        navController.navigate("lista_vehiculo/${cliente.id}")
                     })
                 }
             }
+        }
+        Button(
+            onClick = {
+                navController.navigate("registro_cliente")
+
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top=10.dp)
+        ) {
+            Text("Registrar nuevo cliente")
         }
     }
 }
