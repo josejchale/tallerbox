@@ -21,4 +21,8 @@ class VehiculoViewModel(private val repo: VehiculoRepository) : ViewModel() {
             onComplete?.invoke()
         }
     }
+    fun obtenerVehiculosPorCliente(clienteId: Int): StateFlow<List<VehiculoEntity>> =
+        repo.obtenerPorClienteFlow(clienteId)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
 }

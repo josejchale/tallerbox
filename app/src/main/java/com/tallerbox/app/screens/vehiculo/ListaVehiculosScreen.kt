@@ -17,27 +17,46 @@ import androidx.navigation.NavController
 import com.tallerbox.app.viewmodel.vehiculo.VehiculoViewModel
 
 @Composable
-fun ListaVehiculosScreen(navController: NavController, vm: VehiculoViewModel = viewModel(factory = VehiculoViewModelFactory(LocalContext.current))) {
-    val vehiculo = vm.vehiculo.collectAsState().value
+fun ListaVehiculosScreen(
+    navController: NavController,
+    clienteId: Int?,
+    vm: VehiculoViewModel = viewModel(factory = VehiculoViewModelFactory(LocalContext.current))
+) {
+    val vehiculos = clienteId?.let {
+        vm.obtenerVehiculosPorCliente(it).collectAsState().value
+    } ?: emptyList()
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(top= 20.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top=60.dp)
+            .padding(horizontal=20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text("Vehículos registrados", style = MaterialTheme.typography.headlineSmall)
 
-        Text("Vehiculos registrados", style = MaterialTheme.typography.headlineSmall)
-        Spacer(modifier = Modifier.height(12.dp))
 
-        if (vehiculo.isEmpty()) {
-            Text("No hay vehiculos registrados", style = MaterialTheme.typography.bodyMedium)
+
+        if (vehiculos.isEmpty()) {
+            Text("Este cliente no tiene vehículos registrados", style = MaterialTheme.typography.bodyMedium)
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(vehiculo) { vehiculo ->
+                items(vehiculos) { vehiculo ->
                     VehiculoCard(vehiculo = vehiculo, onClick = {
-                        // ejemplo: navegar a detalle o registrar vehículo pasando igit d
-                        navController.navigate("lista_vehiculo")
+                        // Aquí podrías navegar a detalle si lo implementas
                     })
                 }
             }
+        }
+        Button(
+            onClick = {
+                clienteId?.let {
+                    navController.navigate("registro_vehiculo/{clienteId}")
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Registrar nuevo vehículo")
         }
     }
 }

@@ -8,4 +8,9 @@ class VehiculoRepository (private val dao: VehiculoDao){
     suspend fun insertar(vehiculo: VehiculoEntity) = dao.insertar(vehiculo)
 
     fun obtenerTodosFlow(): Flow<List<VehiculoEntity>> = dao.obtenerTodosFlow()
+
+    fun obtenerPorClienteFlow(clienteId: Int): Flow<List<VehiculoEntity>> {
+        return dao.obtenerPorClienteFlow(clienteId)
+    }
+
 }

@@ -32,8 +32,10 @@ fun AppNavigation(navController: NavHostController) {
             RegistroVehiculoScreen(navController, clienteId)
         }
 
-        composable("lista_vehiculo") {
-            ListaVehiculosScreen(navController)
+        composable("lista_vehiculo/{clienteId}") { backStackEntry ->
+            val clienteId = backStackEntry.arguments?.getString("clienteId")?.toIntOrNull()
+            ListaVehiculosScreen(navController, clienteId)
         }
+
     }
 }

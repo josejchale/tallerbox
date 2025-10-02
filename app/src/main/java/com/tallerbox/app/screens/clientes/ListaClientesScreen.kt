@@ -34,7 +34,7 @@ fun ListaClientesScreen(navController: NavController, vm: ClienteViewModel = vie
                 items(clientes) { cliente ->
                     ClienteCard(cliente = cliente, onClick = {
                         // ejemplo: navegar a detalle o registrar vehículo pasando id
-                        navController.navigate("registro_vehiculo/${cliente.id}")
+                        navController.navigate("lista_vehiculo/{clienteId}")
                     })
                 }
             }
