@@ -159,7 +159,7 @@ fun RegistroVehiculoScreen(navController: NavHostController, clienteId: Int?) {
                                         "Vehiculo registrado con éxito",
                                         Toast.LENGTH_SHORT
                                     ).show()
-                                    navController.navigate("main")
+                                    navController.navigate("registro_orden/{clienteId}/{vehiculoId}")
                                 }
                             }
                         }
