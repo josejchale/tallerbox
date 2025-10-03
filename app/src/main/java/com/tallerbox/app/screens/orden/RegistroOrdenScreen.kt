@@ -3,7 +3,6 @@ package com.tallerbox.app.screens.orden
 import android.app.DatePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -40,7 +39,7 @@ fun RegistroOrdenScreen(
     val vehiculoDao = db.vehiculoDao()
     val ordenDao = db.ordenServicioDao()
 
-    var numeroOrden by remember { mutableStateOf("") }
+    var numeroOrden by remember { mutableStateOf("ORD-${System.currentTimeMillis()}") }
     val dateFormatter = remember { SimpleDateFormat("EEE, dd MMM", Locale("es", "MX")) }
     var fechaIngreso by remember { mutableStateOf(Date()) }
     var fechaEntrega by remember { mutableStateOf<Date?>(null) }
@@ -88,7 +87,9 @@ fun RegistroOrdenScreen(
         // cargar listas iniciales
         clienteDao.obtenerTodosFlow().collect { list ->
             clientes = list
-            if (selectedClienteId == null && list.isNotEmpty()) selectedClienteId = list.first().id
+            if (clienteId != null && selectedClienteId == null && list.isNotEmpty()) {
+                selectedClienteId = clienteId
+            }
         }
     }
 
@@ -161,55 +162,72 @@ fun RegistroOrdenScreen(
         }
 
 
-        // Cliente selector
-        Text("Cliente", style = MaterialTheme.typography.titleMedium)
-        if (clientes.isEmpty()) {
-            Text("No hay clientes registrados", style = MaterialTheme.typography.bodySmall)
-        } else {
-            Column {
-                clientes.forEach { c ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .selectable(selected = (selectedClienteId == c.id), onClick = {
+        if (clienteId == null) {
+            Text("Seleccionar cliente", style = MaterialTheme.typography.labelMedium)
+            var clienteExpanded by remember { mutableStateOf(false) }
+
+            ExposedDropdownMenuBox(
+                expanded = clienteExpanded,
+                onExpandedChange = { clienteExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = clientes.find { it.id == selectedClienteId }?.nombreCompleto ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Cliente") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = clienteExpanded) },
+                    modifier = Modifier.menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = clienteExpanded,
+                    onDismissRequest = { clienteExpanded = false }
+                ) {
+                    clientes.forEach { c ->
+                        DropdownMenuItem(
+                            text = { Text(c.nombreCompleto) },
+                            onClick = {
                                 selectedClienteId = c.id
-                            })
-                            .padding(vertical = 4.dp)
-                    ) {
-                        RadioButton(selected = (selectedClienteId == c.id), onClick = { selectedClienteId = c.id })
-                        Spacer(Modifier.width(8.dp))
-                        Text("${c.nombreCompleto} — ${c.telefono}")
+                                clienteExpanded = false
+                            }
+                        )
                     }
                 }
             }
         }
 
-        // Vehículo selector (filtrado por cliente)
-        Text("Vehículo", style = MaterialTheme.typography.titleMedium)
-        if (selectedClienteId == null) {
-            Text("Selecciona un cliente primero", style = MaterialTheme.typography.bodySmall)
-        } else {
-            if (vehiculos.isEmpty()) {
-                Text("No hay vehículos para este cliente", style = MaterialTheme.typography.bodySmall)
-            } else {
-                Column {
+        if (vehiculoId == null) {
+            Text("Seleccionar vehículo", style = MaterialTheme.typography.labelMedium)
+            var vehiculoExpanded by remember { mutableStateOf(false) }
+
+            ExposedDropdownMenuBox(
+                expanded = vehiculoExpanded,
+                onExpandedChange = { vehiculoExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = vehiculos.find { it.id == selectedVehiculoId }?.let { "${it.marca} ${it.modelo}" } ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Vehículo") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = vehiculoExpanded) },
+                    modifier = Modifier.menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = vehiculoExpanded,
+                    onDismissRequest = { vehiculoExpanded = false }
+                ) {
                     vehiculos.forEach { v ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .selectable(selected = (selectedVehiculoId == v.id), onClick = { selectedVehiculoId = v.id })
-                                .padding(vertical = 4.dp)
-                        ) {
-                            RadioButton(selected = (selectedVehiculoId == v.id), onClick = { selectedVehiculoId = v.id })
-                            Spacer(Modifier.width(8.dp))
-                            Text("${v.marca} ${v.modelo} • ${v.placa ?: ""}")
-                        }
+                        DropdownMenuItem(
+                            text = { Text("${v.marca} ${v.modelo}") },
+                            onClick = {
+                                selectedVehiculoId = v.id
+                                vehiculoExpanded = false
+                            }
+                        )
                     }
                 }
             }
         }
+
 
         OutlinedTextField(
             value = descripcion,
