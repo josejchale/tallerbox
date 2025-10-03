@@ -39,15 +39,9 @@ data class CondicionVehiculo(
 
 // Costo detalle
 data class CostosOrden(
-    val subtotal: Double = 0.0,
-    val manoObra: Double = 0.0,
-    val repuestos: Double = 0.0,
-    val impuestos: Double = 0.0,
-    val descuento: Double = 0.0
-) {
-    val total: Double
-        get() = (subtotal + manoObra + repuestos + impuestos) - descuento
-}
+    val costo: Double = 0.0
+)
+
 
 @Entity(
     tableName = "orden_servicio",

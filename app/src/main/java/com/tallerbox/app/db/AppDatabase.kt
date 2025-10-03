@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.tallerbox.app.db.migraciones.MIGRATION_3_4
 import com.tallerbox.app.model.cliente.ClienteEntity
 import com.tallerbox.app.model.cliente.ClienteDao
 import com.tallerbox.app.model.vehiculo.VehiculoEntity
@@ -15,8 +16,8 @@ import com.tallerbox.app.model.orden.OrdenTypeConverters
 
 @Database(
     entities = [ClienteEntity::class, VehiculoEntity::class, OrdenServicioEntity::class],
-    version = 3, // incrementa versión al añadir entidad
-    exportSchema = false
+    version = 5,
+    exportSchema = true
 )
 @TypeConverters(OrdenTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -34,8 +35,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "tallerbox_db"
                 )
-                    // Durante desarrollo evita errores de migración; en producción escribe migraciones
-                    .fallbackToDestructiveMigration()
+                    .addMigrations(MIGRATION_3_4)
                     .build()
                 INSTANCE = instance
                 instance

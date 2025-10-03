@@ -59,12 +59,9 @@ fun RegistroOrdenScreen(
     var llaves by remember { mutableStateOf(EstadoCondicion.NO) }
     var observacionesCond by remember { mutableStateOf("") }
 
-    // costos
-    var subtotal by remember { mutableStateOf("0.0") }
-    var manoObra by remember { mutableStateOf("0.0") }
-    var repuestos by remember { mutableStateOf("0.0") }
-    var impuestos by remember { mutableStateOf("0.0") }
-    var descuento by remember { mutableStateOf("0.0") }
+    // costo
+    var costo by remember { mutableStateOf("0.0") }
+
 
     var clientes by remember { mutableStateOf<List<ClienteEntity>>(emptyList()) }
     var vehiculos by remember { mutableStateOf<List<VehiculoEntity>>(emptyList()) }
@@ -216,11 +213,7 @@ fun RegistroOrdenScreen(
 
         // Costos
         Text("Costos", style = MaterialTheme.typography.titleMedium)
-        OutlinedTextField(value = subtotal, onValueChange = { subtotal = it }, label = { Text("Subtotal") }, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(value = manoObra, onValueChange = { manoObra = it }, label = { Text("Mano de obra") }, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(value = repuestos, onValueChange = { repuestos = it }, label = { Text("Repuestos") }, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(value = impuestos, onValueChange = { impuestos = it }, label = { Text("Impuestos") }, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(value = descuento, onValueChange = { descuento = it }, label = { Text("Descuento") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(value = costo, onValueChange = { costo = it }, label = { Text("Costo") }, modifier = Modifier.fillMaxWidth())
 
         Spacer(Modifier.height(8.dp))
 
@@ -266,11 +259,7 @@ fun RegistroOrdenScreen(
                         observaciones = observacionesCond.ifBlank { null }
                     ),
                     costos = CostosOrden(
-                        subtotal = subtotal.toDoubleOrNull() ?: 0.0,
-                        manoObra = manoObra.toDoubleOrNull() ?: 0.0,
-                        repuestos = repuestos.toDoubleOrNull() ?: 0.0,
-                        impuestos = impuestos.toDoubleOrNull() ?: 0.0,
-                        descuento = descuento.toDoubleOrNull() ?: 0.0
+                        costo = costo.toDoubleOrNull() ?: 0.0
                     ),
                     firmaClienteBase64 = null,
                     aceptaEnvioPublicidad = false,
