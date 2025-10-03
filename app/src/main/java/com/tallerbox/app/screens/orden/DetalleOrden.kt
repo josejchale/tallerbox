@@ -58,7 +58,7 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text("Trabajo realizado: ${data.orden.trabajoRealizado ?: ""}", style = MaterialTheme.typography.bodyMedium)
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("Costos: ${data.orden.costos.costo}", style = MaterialTheme.typography.titleMedium)
+                    Text("Costo: ${data.orden.costos.costo}", style = MaterialTheme.typography.titleMedium)
                 }
             }
         }

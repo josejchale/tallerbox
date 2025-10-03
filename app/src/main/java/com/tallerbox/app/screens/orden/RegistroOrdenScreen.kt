@@ -1,10 +1,14 @@
 package com.tallerbox.app.screens.orden
 
+import android.app.DatePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +24,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Date
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,8 +41,11 @@ fun RegistroOrdenScreen(
     val ordenDao = db.ordenServicioDao()
 
     var numeroOrden by remember { mutableStateOf("") }
-    var fechaIngreso by remember { mutableStateOf("") } // you can later replace with Date picker
-    var fechaEntrega by remember { mutableStateOf("") }
+    val dateFormatter = remember { SimpleDateFormat("EEE, dd MMM", Locale("es", "MX")) }
+    var fechaIngreso by remember { mutableStateOf(Date()) }
+    var fechaEntrega by remember { mutableStateOf<Date?>(null) }
+    var showIngresoPicker by remember { mutableStateOf(false) }
+    var showEntregaPicker by remember { mutableStateOf(false) }
     var descripcion by remember { mutableStateOf("") }
     var trabajoRealizado by remember { mutableStateOf("") }
     var notas by remember { mutableStateOf("") }
@@ -69,6 +78,9 @@ fun RegistroOrdenScreen(
     var selectedClienteId by remember { mutableStateOf(clienteId) }
     var selectedVehiculoId by remember { mutableStateOf(vehiculoId) }
 
+    fun formatDate(date: Date?): String {
+        return date?.let { SimpleDateFormat("EEE, d MMM yyyy", Locale("es", "ES")).format(it) } ?: "--"
+    }
     LaunchedEffect(Unit) {
         // cargar listas iniciales
         clienteDao.obtenerTodosFlow().collect { list ->
@@ -98,7 +110,9 @@ fun RegistroOrdenScreen(
             .padding(horizontal = 20.dp)
             .verticalScroll(scroll),
         verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
+    )
+
+    {
         Text("Registro de Orden de Servicio", style = MaterialTheme.typography.headlineSmall)
 
         OutlinedTextField(
@@ -108,19 +122,41 @@ fun RegistroOrdenScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        OutlinedTextField(
-            value = fechaIngreso,
-            onValueChange = { fechaIngreso = it },
-            label = { Text("Fecha de ingreso (YYYY-MM-DD)") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        Text("Fecha de ingreso", style = MaterialTheme.typography.labelLarge)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { showIngresoPicker = true }) {
+                Icon(Icons.Default.CalendarToday, contentDescription = "Seleccionar fecha ingreso")
+            }
+            Text(dateFormatter.format(fechaIngreso), style = MaterialTheme.typography.bodyLarge)
+            IconButton(onClick = { showIngresoPicker = true }) {
+                Icon(Icons.Default.ArrowDropDown, contentDescription = "Abrir calendario")
+            }
+        }
 
-        OutlinedTextField(
-            value = fechaEntrega,
-            onValueChange = { fechaEntrega = it },
-            label = { Text("Fecha estimada de entrega (YYYY-MM-DD)") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text("Fecha de entrega estimada", style = MaterialTheme.typography.labelLarge)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { showEntregaPicker = true }) {
+                Icon(Icons.Default.CalendarToday, contentDescription = "Seleccionar fecha entrega")
+            }
+            Text(
+                fechaEntrega?.let { dateFormatter.format(it) } ?: "Sin definir",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            IconButton(onClick = { showEntregaPicker = true }) {
+                Icon(Icons.Default.ArrowDropDown, contentDescription = "Abrir calendario")
+            }
+        }
+
 
         // Cliente selector
         Text("Cliente", style = MaterialTheme.typography.titleMedium)
@@ -215,9 +251,9 @@ fun RegistroOrdenScreen(
         Text("Costos", style = MaterialTheme.typography.titleMedium)
         OutlinedTextField(value = costo, onValueChange = { costo = it }, label = { Text("Costo") }, modifier = Modifier.fillMaxWidth())
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(32.dp))
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedButton(onClick = { navController.popBackStack() }, modifier = Modifier.weight(1f)) {
                 Text("Cancelar")
             }
@@ -279,6 +315,36 @@ fun RegistroOrdenScreen(
             }
         }
     }
+    if (showIngresoPicker) {
+        DatePickerDialog(
+            context,
+            { _, year, month, day ->
+                val cal = Calendar.getInstance()
+                cal.set(year, month, day)
+                fechaIngreso = cal.time
+                showIngresoPicker = false
+            },
+            Calendar.getInstance().get(Calendar.YEAR),
+            Calendar.getInstance().get(Calendar.MONTH),
+            Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
+    if (showEntregaPicker) {
+        DatePickerDialog(
+            context,
+            { _, year, month, day ->
+                val cal = Calendar.getInstance()
+                cal.set(year, month, day)
+                fechaEntrega = cal.time
+                showEntregaPicker = false
+            },
+            Calendar.getInstance().get(Calendar.YEAR),
+            Calendar.getInstance().get(Calendar.MONTH),
+            Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
 }
 
 @Composable
