@@ -78,6 +78,9 @@ fun RegistroOrdenScreen(
     var selectedClienteId by remember { mutableStateOf(clienteId) }
     var selectedVehiculoId by remember { mutableStateOf(vehiculoId) }
 
+    var aceptaPublicidad by remember { mutableStateOf(false) }
+    var aceptaCedencia by remember { mutableStateOf(false) }
+
     fun formatDate(date: Date?): String {
         return date?.let { SimpleDateFormat("EEE, d MMM yyyy", Locale("es", "ES")).format(it) } ?: "--"
     }
@@ -222,7 +225,7 @@ fun RegistroOrdenScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Condiciones (ejemplo con espejos, asientos y faro; puedes replicar para el resto)
+        // Condiciones
         Text("Condiciones del vehículo", style = MaterialTheme.typography.titleMedium)
         CondicionRow("Espejos", espejos) { espejos = it }
         CondicionRow("Asientos", asientos) { asientos = it }
@@ -253,66 +256,94 @@ fun RegistroOrdenScreen(
 
         Spacer(Modifier.height(32.dp))
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(
+                checked = aceptaPublicidad,
+                onCheckedChange = { aceptaPublicidad = it }
+            )
+            Text("Acepto recibir publicidad")
+        }
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(
+                checked = aceptaCedencia,
+                onCheckedChange = { aceptaCedencia = it }
+            )
+            Text("Acepta que el prestador del servicio pueda ceder o transmitir el vehículo,sus partes o piezas, a terceros (como torneros, soldadores u otros especialistas), ya sea con fines de reparación o para la obtención de cotizaciones de costos y precios. Esto será permitido únicamente en caso de ser estrictamente necesario y siempre que el propietario sea previamente informado de estas acciones y haya dado su consentimiento para el traslado del vehículo o de sus componentes.  (obligatorio)")
+        }
+
+
         Row(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedButton(onClick = { navController.popBackStack() }, modifier = Modifier.weight(1f)) {
                 Text("Cancelar")
             }
 
-            Button(onClick = {
-                // validaciones básicas
-                if (selectedClienteId == null) {
-                    Toast.makeText(context, "Selecciona un cliente", Toast.LENGTH_SHORT).show()
-                    return@Button
-                }
-
-                // construir entidad
-                val orden = OrdenServicioEntity(
-                    clienteId = selectedClienteId!!,
-                    vehiculoId = selectedVehiculoId,
-                    numeroOrden = numeroOrden.ifBlank { "ORD-${System.currentTimeMillis()}" },
-                    fechaIngreso = Date(), // puedes parsear fechaIngreso string si prefieres
-                    fechaEntregaEstimado = null,
-                    fechaEntregaReal = null,
-                    descripcionFalla = descripcion,
-                    trabajoRealizado = trabajoRealizado,
-                    notas = notas,
-                    condiciones = CondicionVehiculo(
-                        espejos = espejos,
-                        asientos = asientos,
-                        faroDelantero = faroDelantero,
-                        luzTrasera = luzTrasera,
-                        direccionales = direccionales,
-                        cubiertas = cubiertas,
-                        taponGasolina = taponGasolina,
-                        pedales = pedales,
-                        parabrisas = parabrisas,
-                        claxon = claxon,
-                        taponAceite = taponAceite,
-                        taponRadiador = taponRadiador,
-                        filtroAire = filtroAire,
-                        bateria = bateria,
-                        llaves = llaves,
-                        observaciones = observacionesCond.ifBlank { null }
-                    ),
-                    costos = CostosOrden(
-                        costo = costo.toDoubleOrNull() ?: 0.0
-                    ),
-                    firmaClienteBase64 = null,
-                    aceptaEnvioPublicidad = false,
-                    aceptaCedencia = false,
-                    estadoOrden = "PENDIENTE"
-                )
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    val newId = ordenDao.insertar(orden)
-                    launch(Dispatchers.Main) {
-                        Toast.makeText(context, "Orden guardada", Toast.LENGTH_SHORT).show()
-                        navController.navigate("detalle_orden/$newId")
+            Button(
+                onClick = {
+                    if (!aceptaCedencia) {
+                        Toast.makeText(context, "Debes aceptar la cesión del vehiculo", Toast.LENGTH_SHORT).show()
+                        return@Button
                     }
-                }
-            }, modifier = Modifier.weight(1f)) {
+
+                    if (selectedClienteId == null) {
+                        Toast.makeText(context, "Selecciona un cliente", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    // construir entidad
+                    val orden = OrdenServicioEntity(
+                        clienteId = selectedClienteId!!,
+                        vehiculoId = selectedVehiculoId,
+                        numeroOrden = numeroOrden.ifBlank { "ORD-${System.currentTimeMillis()}" },
+                        fechaIngreso = Date(),
+                        fechaEntregaEstimado = null,
+                        fechaEntregaReal = null,
+                        descripcionFalla = descripcion,
+                        trabajoRealizado = trabajoRealizado,
+                        notas = notas,
+                        condiciones = CondicionVehiculo(
+                            espejos = espejos,
+                            asientos = asientos,
+                            faroDelantero = faroDelantero,
+                            luzTrasera = luzTrasera,
+                            direccionales = direccionales,
+                            cubiertas = cubiertas,
+                            taponGasolina = taponGasolina,
+                            pedales = pedales,
+                            parabrisas = parabrisas,
+                            claxon = claxon,
+                            taponAceite = taponAceite,
+                            taponRadiador = taponRadiador,
+                            filtroAire = filtroAire,
+                            bateria = bateria,
+                            llaves = llaves,
+                            observaciones = observacionesCond.ifBlank { null }
+                        ),
+                        costos = CostosOrden(
+                            costo = costo.toDoubleOrNull() ?: 0.0
+                        ),
+                        firmaClienteBase64 = null,
+                        aceptaEnvioPublicidad = aceptaPublicidad,
+                        aceptaCedencia = aceptaCedencia,
+                        estadoOrden = "PENDIENTE"
+                    )
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val newId = ordenDao.insertar(orden)
+                        launch(Dispatchers.Main) {
+                            Toast.makeText(context, "Orden guardada", Toast.LENGTH_SHORT).show()
+                            navController.navigate("detalle_orden/$newId")
+                        }
+                    }
+                },
+                enabled = aceptaCedencia,
+                modifier = Modifier.weight(1f)
+            ) {
                 Text("Guardar Orden")
             }
+
         }
     }
     if (showIngresoPicker) {
