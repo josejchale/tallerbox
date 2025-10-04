@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Permitir compartir archivos creados en cacheDir -->
+    <cache-path name="cache" path="." />
+
+    <!-- Permitir compartir archivos creados en filesDir -->
+    <files-path name="files" path="." />
+
+    <!-- Opcional: permitir compartir archivos en almacenamiento externo de la app -->
+    <external-files-path name="external_files" path="." />
+</paths>

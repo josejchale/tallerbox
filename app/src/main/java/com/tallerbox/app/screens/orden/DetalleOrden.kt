@@ -9,15 +9,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.tallerbox.app.db.AppDatabase
 import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import com.tallerbox.app.repository.OrdenRepository
+import com.tallerbox.app.util.PdfGenerator
 import com.tallerbox.app.viewmodel.orden.OrdenViewModel
 import com.tallerbox.app.viewmodel.orden.OrdenViewModelFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -39,7 +42,7 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 60.dp)
+            .padding(top = 20.dp)
             .padding(horizontal = 16.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -73,13 +76,45 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
         item {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(onClick = { navController.navigate("main") }, modifier = Modifier.weight(1f)) {
-                    Text("Terminar")
+                    Text("Volver")
                 }
-                Button(onClick = {
-                    Toast.makeText(context, "Función enviar pendiente", Toast.LENGTH_SHORT).show()
-                }, modifier = Modifier.weight(1f)) {
+
+                // variables capturadas en el scope composable, fuera del onClick
+                val contextForPdf = LocalContext.current
+                val scopeForPdf = rememberCoroutineScope()
+
+                Button(
+                    onClick = {
+                        val data = detalleResult.getOrNull()
+                        if (data == null) {
+                            Toast.makeText(contextForPdf, "Orden no cargada", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        scopeForPdf.launch(Dispatchers.IO) {
+                            try {
+                                val filename = "orden_${data.orden.numeroOrden ?: data.orden.id}.pdf"
+                                val outFile = File(contextForPdf.cacheDir, filename)
+                                PdfGenerator.generateOrdenPdf(contextForPdf, data, outFile)
+
+                                val authority = "${contextForPdf.packageName}.fileprovider"
+                                val uri = FileProvider.getUriForFile(contextForPdf, authority, outFile)
+
+                                launch(Dispatchers.Main) {
+                                    showShareOptions(contextForPdf, uri)
+                                }
+                            } catch (e: Exception) {
+                                launch(Dispatchers.Main) {
+                                    Toast.makeText(contextForPdf, "Error generando PDF: ${e.message}", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
                     Text("Enviar PDF")
                 }
+
             }
         }
     }
