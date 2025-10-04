@@ -78,7 +78,7 @@ fun ListaOrdenesScreen(navController: NavHostController, vehiculoId: Int? = null
             Button(onClick = { navController.popBackStack() }, modifier = Modifier.weight(1f)) {
                 Text("Volver")
             }
-            Button(onClick = { navController.navigate("registro_orden") }, modifier = Modifier.weight(1f)) {
+            Button(onClick = { navController.navigate("registro_orden/$clienteId/${vehiculoId}") }, modifier = Modifier.weight(1f)) {
                 Text("Nueva orden")
             }
         }

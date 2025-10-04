@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.tallerbox.app.db.AppDatabase
+import com.tallerbox.app.model.vehiculo.VehiculoDao
 import com.tallerbox.app.model.vehiculo.VehiculoEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -150,16 +151,18 @@ fun RegistroVehiculoScreen(navController: NavHostController, clienteId: Int?) {
                                 placa=placa
                             )
                             CoroutineScope(Dispatchers.IO).launch {
-                                vehiculoDao.insertar(vehiculo)
-
-                                //Muestra un toast y navega al registro de vehiculos
-                                launch(Dispatchers.Main) {
-                                    Toast.makeText(
-                                        context,
-                                        "Vehiculo registrado con éxito",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    navController.navigate("registro_orden/{clienteId}/{vehiculoId}")
+                                try {
+                                    val newIdLong = vehiculoDao.insertar(vehiculo) // devuelve Long
+                                    val newId = newIdLong.toInt() // convierte a Int
+                                    launch(Dispatchers.Main) {
+                                        Toast.makeText(context, "Vehiculo registrado", Toast.LENGTH_SHORT).show()
+                                        // Navega a RegistroOrden con el id recién creado
+                                        navController.navigate("registro_orden/${clienteId}/${newId}")
+                                    }
+                                } catch (_: Exception) {
+                                    launch(Dispatchers.Main) {
+                                        Toast.makeText(context, "Error al guardar cliente", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                             }
                         }

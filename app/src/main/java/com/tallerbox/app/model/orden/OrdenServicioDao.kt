@@ -2,6 +2,7 @@ package com.tallerbox.app.model.orden
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
+import java.util.Date
 
 @Dao
 interface OrdenServicioDao {
@@ -28,4 +29,8 @@ interface OrdenServicioDao {
     @Transaction
     @Query("SELECT * FROM orden_servicio WHERE id = :ordenId")
     suspend fun obtenerOrdenConRelaciones(ordenId: Int): OrdenConClienteYVehiculo?
+
+    @Query("UPDATE orden_servicio SET estadoOrden = :estado, fechaEntregaReal = :fechaEntregaReal WHERE id = :ordenId")
+    suspend fun actualizarEstadoYEntrega(ordenId: Int, estado: String, fechaEntregaReal: Date?)
+
 }

@@ -102,7 +102,8 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
         }
 
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(
                 value = calle1,
                 onValueChange = { calle1 = it },

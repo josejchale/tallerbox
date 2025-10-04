@@ -16,8 +16,10 @@ import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import com.tallerbox.app.repository.OrdenRepository
 import com.tallerbox.app.viewmodel.orden.OrdenViewModel
 import com.tallerbox.app.viewmodel.orden.OrdenViewModelFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Locale
+import java.util.*
 
 @Composable
 fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
@@ -30,13 +32,14 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
     val db = AppDatabase.getDatabase(context)
     val repo = OrdenRepository(db.ordenServicioDao())
     val vm: OrdenViewModel = viewModel(factory = OrdenViewModelFactory(repo))
-
     val detalleResult by vm.detalle.collectAsState()
+
     LaunchedEffect(ordenId) { vm.cargarDetalle(ordenId) }
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
+            .padding(top = 60.dp)
             .padding(horizontal = 16.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -55,7 +58,9 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
                     if (data == null) {
                         Text("Orden no encontrada", style = MaterialTheme.typography.bodyMedium)
                     } else {
-                        TicketOrdenDetalle(data)
+                        TicketOrdenDetalle(data, ordenId, navController) {
+                            vm.cargarDetalle(ordenId)
+                        }
                     }
                 }
             }
@@ -78,18 +83,28 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
             }
         }
     }
-
-
-
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TicketOrdenDetalle(data: OrdenConClienteYVehiculo) {
+fun TicketOrdenDetalle(
+    data: OrdenConClienteYVehiculo,
+    ordenId: Int,
+    navController: NavHostController,
+    onEstadoActualizado: () -> Unit
+) {
+    val context = LocalContext.current
+    val db = AppDatabase.getDatabase(context)
+    val ordenDao = db.ordenServicioDao()
+    val scope = rememberCoroutineScope()
+
     val formatter = remember {
-        SimpleDateFormat("dd MMM yyyy", Locale("es", "MX")) // aún funcional, pero puedes usar:
-        // SimpleDateFormat("dd MMM yyyy", Locale.Builder().setLanguage("es").setRegion("MX").build())
+        SimpleDateFormat("dd MMM yyyy", Locale("es", "MX"))
     }
 
+    var estadoOrden by remember { mutableStateOf(data.orden.estadoOrden ?: "PENDIENTE") }
+    var estadoExpanded by remember { mutableStateOf(false) }
+    val esCompletada = estadoOrden == "COMPLETADA"
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -99,20 +114,77 @@ fun TicketOrdenDetalle(data: OrdenConClienteYVehiculo) {
             Text("Orden #${data.orden.numeroOrden}", style = MaterialTheme.typography.titleLarge)
             HorizontalDivider()
 
-
             Text("Cliente: ${data.cliente?.nombreCompleto ?: "—"}")
             Text("Vehículo: ${data.vehiculo?.marca ?: "—"} ${data.vehiculo?.modelo ?: ""}")
-            Text("Estado: ${data.orden.estadoOrden ?: "—"}", style = MaterialTheme.typography.labelLarge)
+
+            Text("Estado de la orden", style = MaterialTheme.typography.labelMedium)
+
+            ExposedDropdownMenuBox(
+                expanded = estadoExpanded,
+                onExpandedChange = { estadoExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = estadoOrden,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Estado") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = estadoExpanded) },
+                    modifier = Modifier.menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = estadoExpanded,
+                    onDismissRequest = { estadoExpanded = false }
+                ) {
+                    listOf("PENDIENTE", "EN_PROCESO", "COMPLETADA").forEach { estado ->
+                        DropdownMenuItem(
+                            text = { Text(estado) },
+                            onClick = {
+                                estadoOrden = estado
+                                estadoExpanded = false
+
+                                // Si se selecciona "COMPLETADA", guardar automáticamente
+                                if (estado == "COMPLETADA") {
+                                    val fechaEntregaReal = Date()
+                                    scope.launch(Dispatchers.IO) {
+                                        ordenDao.actualizarEstadoYEntrega(ordenId, estado, fechaEntregaReal)
+                                        launch(Dispatchers.Main) {
+                                            Toast.makeText(context, "Orden marcada como COMPLETADA", Toast.LENGTH_SHORT).show()
+                                            onEstadoActualizado()
+                                        }
+                                    }
+                                }
+                            }
+                        )
+
+                    }
+                }
+            }
+
+            if (estadoOrden != "COMPLETADA") {
+                Button(
+                    onClick = {
+                        scope.launch(Dispatchers.IO) {
+                            ordenDao.actualizarEstadoYEntrega(ordenId, estadoOrden, null)
+                            launch(Dispatchers.Main) {
+                                Toast.makeText(context, "Estado actualizado", Toast.LENGTH_SHORT).show()
+                                onEstadoActualizado()
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Guardar estado")
+                }
+            }
+
 
             HorizontalDivider()
-
 
             Text("Fecha ingreso: ${formatter.format(data.orden.fechaIngreso)}")
             Text("Entrega estimada: ${data.orden.fechaEntregaEstimado?.let { formatter.format(it) } ?: "—"}")
             Text("Entrega real: ${data.orden.fechaEntregaReal?.let { formatter.format(it) } ?: "—"}")
 
             HorizontalDivider()
-
 
             Text("Falla reportada:", style = MaterialTheme.typography.labelMedium)
             Text(data.orden.descripcionFalla ?: "—")
@@ -121,7 +193,6 @@ fun TicketOrdenDetalle(data: OrdenConClienteYVehiculo) {
             Text(data.orden.trabajoRealizado ?: "—")
 
             HorizontalDivider()
-
 
             Text("Condiciones del vehículo:", style = MaterialTheme.typography.labelMedium)
 
@@ -144,18 +215,26 @@ fun TicketOrdenDetalle(data: OrdenConClienteYVehiculo) {
                 "Llaves" to condiciones.llaves
             )
 
-            // Divide la lista en dos columnas
             val mitad = listaCondiciones.size / 2
             val columnaIzq = listaCondiciones.subList(0, mitad)
             val columnaDer = listaCondiciones.subList(mitad, listaCondiciones.size)
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     columnaIzq.forEach { (nombre, estado) ->
                         Text("$nombre: ${estado.name}", style = MaterialTheme.typography.bodySmall)
                     }
                 }
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     columnaDer.forEach { (nombre, estado) ->
                         Text("$nombre: ${estado.name}", style = MaterialTheme.typography.bodySmall)
                     }
@@ -164,14 +243,18 @@ fun TicketOrdenDetalle(data: OrdenConClienteYVehiculo) {
 
             if (!condiciones.observaciones.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Observaciones: ${condiciones.observaciones}", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    "Observaciones: ${condiciones.observaciones}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
-
 
             HorizontalDivider()
 
-
-            Text("Costo total: \$${data.orden.costos.costo}", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Costo total: \$${data.orden.costos.costo}",
+                style = MaterialTheme.typography.titleMedium
+            )
         }
     }
 }

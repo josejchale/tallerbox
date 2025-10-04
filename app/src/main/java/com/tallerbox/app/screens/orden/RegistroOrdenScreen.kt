@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.tallerbox.app.components.firma_pad.FirmaPad
 import com.tallerbox.app.db.AppDatabase
 import com.tallerbox.app.model.orden.*
 import com.tallerbox.app.model.vehiculo.VehiculoEntity
@@ -42,7 +43,7 @@ fun RegistroOrdenScreen(
     var numeroOrden by remember { mutableStateOf("ORD-${System.currentTimeMillis()}") }
     val dateFormatter = remember { SimpleDateFormat("EEE, dd MMM", Locale("es", "MX")) }
     var fechaIngreso by remember { mutableStateOf(Date()) }
-    var fechaEntrega by remember { mutableStateOf<Date?>(null) }
+    var fechaEntregaEstimado by remember { mutableStateOf(Date()) }
     var showIngresoPicker by remember { mutableStateOf(false) }
     var showEntregaPicker by remember { mutableStateOf(false) }
     var descripcion by remember { mutableStateOf("") }
@@ -79,6 +80,10 @@ fun RegistroOrdenScreen(
 
     var aceptaPublicidad by remember { mutableStateOf(false) }
     var aceptaCedencia by remember { mutableStateOf(false) }
+
+    var firmaBase64 by remember { mutableStateOf<String?>(null) }
+    var mostrarFirmaDialog by remember { mutableStateOf(false) }
+
 
     fun formatDate(date: Date?): String {
         return date?.let { SimpleDateFormat("EEE, d MMM yyyy", Locale("es", "ES")).format(it) } ?: "--"
@@ -144,22 +149,24 @@ fun RegistroOrdenScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         Text("Fecha de entrega estimada", style = MaterialTheme.typography.labelLarge)
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { showEntregaPicker = true }) {
-                Icon(Icons.Default.CalendarToday, contentDescription = "Seleccionar fecha entrega")
+                Icon(Icons.Default.CalendarToday, contentDescription = "Seleccionar fecha entrega estimada")
             }
             Text(
-                fechaEntrega?.let { dateFormatter.format(it) } ?: "Sin definir",
+                fechaEntregaEstimado.let { dateFormatter.format(it) } ?: "Sin definir",
                 style = MaterialTheme.typography.bodyLarge
             )
             IconButton(onClick = { showEntregaPicker = true }) {
                 Icon(Icons.Default.ArrowDropDown, contentDescription = "Abrir calendario")
             }
         }
+        showEntregaPicker
 
 
         if (clienteId == null) {
@@ -291,6 +298,53 @@ fun RegistroOrdenScreen(
             )
             Text("Acepta que el prestador del servicio pueda ceder o transmitir el vehículo,sus partes o piezas, a terceros (como torneros, soldadores u otros especialistas), ya sea con fines de reparación o para la obtención de cotizaciones de costos y precios. Esto será permitido únicamente en caso de ser estrictamente necesario y siempre que el propietario sea previamente informado de estas acciones y haya dado su consentimiento para el traslado del vehículo o de sus componentes.  (obligatorio)")
         }
+        fun guardarOrden() {
+            val orden = OrdenServicioEntity(
+                clienteId = selectedClienteId!!,
+                vehiculoId = selectedVehiculoId,
+                numeroOrden = numeroOrden,
+                fechaIngreso = fechaIngreso,
+                fechaEntregaEstimado = fechaEntregaEstimado,
+                descripcionFalla = descripcion,
+                trabajoRealizado = trabajoRealizado,
+                notas = notas,
+                condiciones = CondicionVehiculo(
+                    espejos = espejos,
+                    asientos = asientos,
+                    // ... demás campos
+                    observaciones = notas.ifBlank { null }
+                ),
+                costos = CostosOrden(costo.toDoubleOrNull() ?: 0.0),
+                firmaClienteBase64 = firmaBase64,
+                aceptaEnvioPublicidad = aceptaPublicidad,
+                aceptaCedencia = aceptaCedencia,
+                estadoOrden = "PENDIENTE"
+            )
+
+            CoroutineScope(Dispatchers.IO).launch {
+                val newId = ordenDao.insertar(orden)
+                launch(Dispatchers.Main) {
+                    Toast.makeText(context, "Orden guardada", Toast.LENGTH_SHORT).show()
+                    navController.navigate("detalle_orden/$newId")
+                }
+            }
+        }
+
+        if (mostrarFirmaDialog) {
+            AlertDialog(
+                onDismissRequest = { mostrarFirmaDialog = false },
+                confirmButton = {},
+                title = { Text("Firma del cliente") },
+                text = {
+                    FirmaPad(onFirmaConfirmada = {
+                        firmaBase64 = it
+                        mostrarFirmaDialog = false
+                        guardarOrden()
+                    })
+                }
+            )
+        }
+
 
 
         Row(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -301,7 +355,7 @@ fun RegistroOrdenScreen(
             Button(
                 onClick = {
                     if (!aceptaCedencia) {
-                        Toast.makeText(context, "Debes aceptar la cesión del vehiculo", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Debes aceptar la cesión del vehículo", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
 
@@ -310,59 +364,20 @@ fun RegistroOrdenScreen(
                         return@Button
                     }
 
-                    // construir entidad
-                    val orden = OrdenServicioEntity(
-                        clienteId = selectedClienteId!!,
-                        vehiculoId = selectedVehiculoId,
-                        numeroOrden = numeroOrden.ifBlank { "ORD-${System.currentTimeMillis()}" },
-                        fechaIngreso = Date(),
-                        fechaEntregaEstimado = null,
-                        fechaEntregaReal = null,
-                        descripcionFalla = descripcion,
-                        trabajoRealizado = trabajoRealizado,
-                        notas = notas,
-                        condiciones = CondicionVehiculo(
-                            espejos = espejos,
-                            asientos = asientos,
-                            faroDelantero = faroDelantero,
-                            luzTrasera = luzTrasera,
-                            direccionales = direccionales,
-                            cubiertas = cubiertas,
-                            taponGasolina = taponGasolina,
-                            pedales = pedales,
-                            parabrisas = parabrisas,
-                            claxon = claxon,
-                            taponAceite = taponAceite,
-                            taponRadiador = taponRadiador,
-                            filtroAire = filtroAire,
-                            bateria = bateria,
-                            llaves = llaves,
-                            observaciones = observacionesCond.ifBlank { null }
-                        ),
-                        costos = CostosOrden(
-                            costo = costo.toDoubleOrNull() ?: 0.0
-                        ),
-                        firmaClienteBase64 = null,
-                        aceptaEnvioPublicidad = aceptaPublicidad,
-                        aceptaCedencia = aceptaCedencia,
-                        estadoOrden = "PENDIENTE"
-                    )
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val newId = ordenDao.insertar(orden)
-                        launch(Dispatchers.Main) {
-                            Toast.makeText(context, "Orden guardada", Toast.LENGTH_SHORT).show()
-                            navController.navigate("detalle_orden/$newId")
-                        }
+                    if (firmaBase64 == null) {
+                        mostrarFirmaDialog = true
+                        return@Button
                     }
+
+                    guardarOrden()
                 },
                 enabled = aceptaCedencia,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Guardar Orden")
             }
-
         }
+
     }
     if (showIngresoPicker) {
         DatePickerDialog(
@@ -385,7 +400,7 @@ fun RegistroOrdenScreen(
             { _, year, month, day ->
                 val cal = Calendar.getInstance()
                 cal.set(year, month, day)
-                fechaEntrega = cal.time
+                fechaEntregaEstimado = cal.time
                 showEntregaPicker = false
             },
             Calendar.getInstance().get(Calendar.YEAR),
@@ -393,6 +408,7 @@ fun RegistroOrdenScreen(
             Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
         ).show()
     }
+
 
 }
 
