@@ -1,4 +1,4 @@
-package com.tallerbox.app.util
+package com.tallerbox.app.utils
 
 import android.content.Context
 import android.content.Intent
@@ -18,6 +18,14 @@ object PdfGenerator {
     // Locale y formateador
     private val localeMx = Locale.Builder().setLanguage("es").setRegion("MX").build()
     private val dateFormatter = SimpleDateFormat("dd MMM yyyy", localeMx)
+
+    /**
+     * Dibuja una línea separadora de sección.
+     */
+    private fun drawSectionSeparator(canvas: Canvas, y: Float, pageWidth: Int, paint: Paint) {
+        val margin = 36f
+        canvas.drawLine(margin, y, pageWidth - margin, y, paint)
+    }
 
     /**
      * Genera el PDF en el File especificado y devuelve el File resultante.
@@ -60,6 +68,10 @@ object PdfGenerator {
             color = Color.LTGRAY
             strokeWidth = 1f
         }
+        val separatorPaint = Paint().apply {
+            color = Color.BLACK // Color negro para los márgenes
+            strokeWidth = 1.5f
+        }
 
         val marginLeft = 36f
         var y = 36f
@@ -77,20 +89,25 @@ object PdfGenerator {
         y += 28f
         canvas.drawText("ORDEN DE SERVICIO", marginLeft, y, paintTitle)
 
+        // Separator
+        y += 12f
+        drawSectionSeparator(canvas, y, pageWidth, separatorPaint)
+        y += 18f
+
         // Cliente block
-        y += 22f
         canvas.drawText("DATOS DEL CLIENTE", marginLeft, y, paintHeading)
         y += 16f
 
         val cliente = data.cliente
         val clienteNombre = cliente?.nombreCompleto ?: "—"
-        val clienteDireccion = listOfNotNull(
-            cliente?.calle,
-            cliente?.numeroCasa?.toString(),
-
-            cliente?.municipio,
-            cliente?.estado
-        ).joinToString(separator = " ").ifBlank { "—" }
+        val clienteDireccion = buildString {
+            append(cliente?.calle ?: "")
+            cliente?.calle1?.let { if (it.isNotBlank()) append(" e/ $it") }
+            cliente?.calle2?.let { if (it.isNotBlank()) append(" y $it") }
+            cliente?.numeroCasa?.let { append(" #$it") }
+            cliente?.municipio?.let { if (it.isNotBlank()) append(", $it") }
+            cliente?.estado?.let { if (it.isNotBlank()) append(", $it") }
+        }.ifBlank { "—" }
         val clienteTel = cliente?.telefono ?: "—"
 
         canvas.drawText("NOMBRE: $clienteNombre", marginLeft, y, paintNormal)
@@ -99,8 +116,12 @@ object PdfGenerator {
         y += 14f
         canvas.drawText("NÚMERO CELULAR: $clienteTel", marginLeft, y, paintNormal)
 
+        // Separator
+        y += 12f
+        drawSectionSeparator(canvas, y, pageWidth, separatorPaint)
+        y += 18f
+
         // Orden block
-        y += 22f
         canvas.drawText("DATOS DE ORDEN DE SERVICIO", marginLeft, y, paintHeading)
         y += 16f
 
@@ -114,8 +135,12 @@ object PdfGenerator {
         y += 14f
         canvas.drawText("FECHA DE ENTREGA: $fechaEntregaEst", marginLeft, y, paintNormal)
 
+        // Separator
+        y += 12f
+        drawSectionSeparator(canvas, y, pageWidth, separatorPaint)
+        y += 18f
+
         // Vehicle block
-        y += 22f
         canvas.drawText("DATOS DEL VEHÍCULO", marginLeft, y, paintHeading)
         y += 16f
 
@@ -127,24 +152,29 @@ object PdfGenerator {
         val placas = veh?.placa ?: "—"
         val vin = veh?.vin ?: "—"
 
-        // Draw table-like single row
         val colW = (pageWidth - marginLeft * 2) / 6f
         var x = marginLeft
-        canvas.drawText("MARCA", x, y, paintSmall); x += colW
-        canvas.drawText("MODELO", x, y, paintSmall); x += colW
-        canvas.drawText("AÑO", x, y, paintSmall); x += colW
-        canvas.drawText("COLOR", x, y, paintSmall); x += colW
-        canvas.drawText("PLACAS", x, y, paintSmall); x += colW
-        canvas.drawText("VIN", x, y, paintSmall)
+        // Headers en negrita
+        canvas.drawText("MARCA", x, y, paintHeading); x += colW
+        canvas.drawText("MODELO", x, y, paintHeading); x += colW
+        canvas.drawText("AÑO", x, y, paintHeading); x += colW
+        canvas.drawText("COLOR", x, y, paintHeading); x += colW
+        canvas.drawText("PLACAS", x, y, paintHeading); x += colW
+        canvas.drawText("VIN", x, y, paintHeading)
         y += 14f
         x = marginLeft
+        // Valores en texto normal
         canvas.drawText(marca, x, y, paintNormal); x += colW
         canvas.drawText(modelo, x, y, paintNormal); x += colW
         canvas.drawText(ano.toString(), x, y, paintNormal); x += colW
         canvas.drawText(colorStr, x, y, paintNormal); x += colW
         canvas.drawText(placas, x, y, paintNormal); x += colW
         canvas.drawText(vin, x, y, paintNormal)
-        y += 22f
+
+        // Separator
+        y += 18f
+        drawSectionSeparator(canvas, y, pageWidth, separatorPaint)
+        y += 18f
 
         // Description
         canvas.drawText("DESCRIPCIÓN DE FALLA", marginLeft, y, paintHeading)
@@ -173,28 +203,43 @@ object PdfGenerator {
             "Tapón radiador" to condiciones.taponRadiador,
             "Filtro aire" to condiciones.filtroAire,
             "Batería" to condiciones.bateria,
-            "Llaves" to condiciones.llaves,
-            "Observaciones" to null
+            "Llaves" to condiciones.llaves
         )
 
         val col1X = marginLeft
         val col2X = pageWidth / 2f
         var condY = y
-        listaCondiciones.forEachIndexed { idx, pair ->
-            if (pair.first == "Observaciones") {
-                val obs = condiciones.observaciones ?: ""
-                if (obs.isNotBlank()) {
-                    condY = drawMultilineText(canvas, "Observaciones: $obs", marginLeft, condY + 6f, pageWidth - marginLeft * 2, paintNormal)
-                    condY += 6f
-                }
-            } else {
-                val left = if (idx % 2 == 0) col1X else col2X
-                val estado = pair.second?.name ?: "—"
-                canvas.drawText("${pair.first}: $estado", left, condY, paintNormal)
-                if (idx % 2 == 1) condY += 14f
+        val itemsPerCol = (listaCondiciones.size + 1) / 2
+
+        for(i in 0 until itemsPerCol) {
+            // Columna 1
+            val item1 = listaCondiciones[i]
+            val estado1 = item1.second?.name ?: "—"
+            canvas.drawText("${item1.first}: $estado1", col1X, condY, paintNormal)
+
+            // Columna 2
+            val index2 = i + itemsPerCol
+            if (index2 < listaCondiciones.size) {
+                val item2 = listaCondiciones[index2]
+                val estado2 = item2.second?.name ?: "—"
+                canvas.drawText("${item2.first}: $estado2", col2X, condY, paintNormal)
             }
+            condY += 14f
         }
-        y = condY + 12f
+        y = condY
+
+        // Observaciones
+        condiciones.observaciones?.takeIf { it.isNotBlank() }?.let {
+            y += 6f
+            canvas.drawText("Observaciones:", marginLeft, y, paintHeading)
+            y += 14f
+            y = drawMultilineText(canvas, it, marginLeft, y, pageWidth - marginLeft * 2, paintNormal)
+        }
+
+        // Separator
+        y += 12f
+        drawSectionSeparator(canvas, y, pageWidth, separatorPaint)
+        y += 18f
 
         // Terms and signature area
         val costo = orden.costos.costo
@@ -205,26 +250,25 @@ object PdfGenerator {
         y = drawMultilineText(canvas, docTerms, marginLeft, y, pageWidth - marginLeft * 2, paintSmall)
         y += 26f
 
-        // Signature area: draw a line and place signature bitmap above it if provided
+        // Signature area
         val signLineY = y + 40f
         canvas.drawLine(marginLeft, signLineY, marginLeft + 220f, signLineY, paintLine)
         canvas.drawText("Firma del prestador de servicios:", marginLeft, signLineY - 10f, paintSmall)
 
         val consumerLineX = marginLeft + 260f
-        val consumerLineY = signLineY
-        canvas.drawLine(consumerLineX, consumerLineY, consumerLineX + 220f, consumerLineY, paintLine)
-        canvas.drawText("Firma de autorización del consumidor:", consumerLineX, consumerLineY - 10f, paintSmall)
+        canvas.drawLine(consumerLineX, signLineY, consumerLineX + 220f, signLineY, paintLine)
+        canvas.drawText("Firma de autorización del consumidor:", consumerLineX, signLineY - 10f, paintSmall)
 
-        // Draw signature image if exists (orden.firmaClienteBase64)
+        // Draw signature image
         orden.firmaClienteBase64?.takeIf { it.isNotBlank() }?.let { b64 ->
             try {
                 val sigBitmap = base64ToBitmap(b64)
-                val maxWidth = 200
-                val scale = minOf(maxWidth.toFloat() / sigBitmap.width, 1f)
+                val maxWidth = 200f
+                val scale = minOf(maxWidth / sigBitmap.width, 1f)
                 val sigW = (sigBitmap.width * scale).toInt()
                 val sigH = (sigBitmap.height * scale).toInt()
-                val destRect = Rect(consumerLineX.toInt(), (consumerLineY - sigH).toInt() - 4, (consumerLineX + sigW).toInt(), consumerLineY.toInt() - 4)
-                canvas.drawBitmap(sigBitmap, null, destRect, Paint())
+                val destRect = Rect(consumerLineX.toInt(), (signLineY - sigH).toInt() - 4, (consumerLineX + sigW).toInt(), signLineY.toInt() - 4)
+                canvas.drawBitmap(sigBitmap, null, destRect, null)
             } catch (ex: Exception) {
                 // ignore drawing signature if decode fails
             }
@@ -249,27 +293,27 @@ object PdfGenerator {
     }
 
     private fun drawMultilineText(canvas: Canvas, text: String, startX: Float, startY: Float, maxWidth: Float, paint: Paint): Float {
-        val words = text.split(Regex("\\s+"))
-        var x = startX
-        var y = startY
-        var line = StringBuilder()
-        for (w in words) {
-            val test = if (line.isEmpty()) w else "${line} $w"
-            val width = paint.measureText(test)
-            if (width > maxWidth) {
-                canvas.drawText(line.toString(), x, y, paint)
-                line = StringBuilder(w)
-                y += paint.textSize + 4f
-            } else {
-                if (line.isNotEmpty()) line.append(" ")
-                line.append(w)
+        var currentY = startY
+        text.split('\n').forEach { line ->
+            val words = line.split(Regex("\\s+"))
+            val lineBuffer = mutableListOf<String>()
+
+            for (word in words) {
+                val testLine = (lineBuffer + word).joinToString(" ")
+                if (paint.measureText(testLine) > maxWidth && lineBuffer.isNotEmpty()) {
+                    canvas.drawText(lineBuffer.joinToString(" "), startX, currentY, paint)
+                    currentY += paint.fontSpacing
+                    lineBuffer.clear()
+                }
+                lineBuffer.add(word)
+            }
+
+            if (lineBuffer.isNotEmpty()) {
+                canvas.drawText(lineBuffer.joinToString(" "), startX, currentY, paint)
+                currentY += paint.fontSpacing
             }
         }
-        if (line.isNotEmpty()) {
-            canvas.drawText(line.toString(), x, y, paint)
-            y += paint.textSize + 4f
-        }
-        return y
+        return currentY
     }
 
     private fun base64ToBitmap(base64: String): Bitmap {
@@ -279,18 +323,9 @@ object PdfGenerator {
 
     /**
      * --- Helpers para compartir/abrir ---
-     *
-     * generateAndGetUri: genera el PDF en cacheDir con el nombre indicado y devuelve el Uri firmado por FileProvider.
-     * openPdf: abre el Pdf en un viewer instalado.
-     * sharePdf: lanza un intent chooser para compartir el PDF.
-     *
-     * Nota: Declara en AndroidManifest.xml el FileProvider con authority "${applicationId}.fileprovider"
-     * y crea res/xml/file_paths.xml con paths apuntando a cache-path o external-path según tu preferencia.
      */
     fun generateAndGetUri(context: Context, data: OrdenConClienteYVehiculo, filename: String = "orden.pdf", providerAuthority: String): Uri {
-        // generar archivo en cacheDir para compartir fácilmente
         val outFile = File(context.cacheDir, filename)
-        if (outFile.exists()) outFile.delete()
         generateOrdenPdf(context, data, outFile)
         return FileProvider.getUriForFile(context, providerAuthority, outFile)
     }
@@ -298,7 +333,7 @@ object PdfGenerator {
     fun openPdf(context: Context, uri: Uri) {
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(uri, "application/pdf")
-            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         context.startActivity(intent)
     }
@@ -307,7 +342,7 @@ object PdfGenerator {
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "application/pdf"
             putExtra(Intent.EXTRA_STREAM, uri)
-            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         val chooser = Intent.createChooser(shareIntent, chooserTitle)
         context.startActivity(chooser)

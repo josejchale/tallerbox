@@ -15,7 +15,7 @@ import androidx.navigation.NavHostController
 import com.tallerbox.app.db.AppDatabase
 import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import com.tallerbox.app.repository.OrdenRepository
-import com.tallerbox.app.util.PdfGenerator
+import com.tallerbox.app.utils.PdfGenerator
 import com.tallerbox.app.viewmodel.orden.OrdenViewModel
 import com.tallerbox.app.viewmodel.orden.OrdenViewModelFactory
 import kotlinx.coroutines.Dispatchers
