@@ -85,9 +85,7 @@ fun RegistroOrdenScreen(
     var mostrarFirmaDialog by remember { mutableStateOf(false) }
 
 
-    fun formatDate(date: Date?): String {
-        return date?.let { SimpleDateFormat("EEE, d MMM yyyy", Locale("es", "ES")).format(it) } ?: "--"
-    }
+
     LaunchedEffect(Unit) {
         // cargar listas iniciales
         clienteDao.obtenerTodosFlow().collect { list ->
