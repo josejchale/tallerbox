@@ -23,14 +23,17 @@ fun ListaVehiculosScreen(
     clienteId: Int?,
     vm: VehiculoViewModel = viewModel(factory = VehiculoViewModelFactory(LocalContext.current))
 ) {
-    // estado nullable: null = esperando primera emisión, List = datos recibidos
     val vehiculosState = produceState<List<VehiculoEntity>?>(initialValue = null, key1 = clienteId, key2 = vm) {
         if (clienteId == null) {
-            value = emptyList()
-            return@produceState
-        }
-        vm.obtenerVehiculosPorCliente(clienteId).collect { lista ->
-            value = lista
+            // Si no hay clienteId, mostrar todos los vehículos
+            vm.vehiculo.collect { lista ->
+                value = lista
+            }
+        } else {
+            // Si hay clienteId, filtrar por cliente
+            vm.obtenerVehiculosPorCliente(clienteId).collect { lista ->
+                value = lista
+            }
         }
     }
 
@@ -43,23 +46,28 @@ fun ListaVehiculosScreen(
     ) {
         Text("Vehículos registrados", style = MaterialTheme.typography.headlineSmall)
 
-        // esperar la primera emisión
         when (val lista = vehiculosState.value) {
             null -> {
-                // indicador de carga mientras esperamos la primera emisión
-                Box(modifier = Modifier.fillMaxWidth().height(120.dp), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(120.dp),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator()
                 }
             }
             else -> {
                 if (lista.isEmpty()) {
-                    Text("Este cliente no tiene vehículos registrados", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        if (clienteId == null)
+                            "No hay vehículos registrados"
+                        else
+                            "Este cliente no tiene vehículos registrados",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 } else {
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(lista) { vehiculo ->
                             VehiculoCard(vehiculo = vehiculo, onClick = {
-                                // navegar a registro de orden pasando clienteId y vehiculoId
-                                // asumimos clienteId no nulo porque la pantalla fue abierta con un cliente
                                 navController.navigate("lista_ordenes/${vehiculo.id}")
                             })
                         }
