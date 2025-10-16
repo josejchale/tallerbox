@@ -170,7 +170,7 @@ fun TicketOrdenDetalle(
                     expanded = estadoExpanded,
                     onDismissRequest = { estadoExpanded = false }
                 ) {
-                    listOf("PENDIENTE", "EN_PROCESO", "COMPLETADA").forEach { estado ->
+                    listOf("PENDIENTE", "EN PROCESO", "COMPLETADA", "ENTREGADA").forEach { estado ->
                         DropdownMenuItem(
                             text = { Text(estado) },
                             onClick = {
@@ -178,12 +178,12 @@ fun TicketOrdenDetalle(
                                 estadoExpanded = false
 
                                 // Si se selecciona "COMPLETADA", guardar automáticamente
-                                if (estado == "COMPLETADA") {
+                                if (estado == "ENTREGADA") {
                                     val fechaEntregaReal = Date()
                                     scope.launch(Dispatchers.IO) {
                                         ordenDao.actualizarEstadoYEntrega(ordenId, estado, fechaEntregaReal)
                                         launch(Dispatchers.Main) {
-                                            Toast.makeText(context, "Orden marcada como COMPLETADA", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "Orden marcada como ENTREGADA", Toast.LENGTH_SHORT).show()
                                             onEstadoActualizado()
                                         }
                                     }
@@ -195,7 +195,7 @@ fun TicketOrdenDetalle(
                 }
             }
 
-            if (estadoOrden != "COMPLETADA") {
+            if (estadoOrden != "ENTREGADA") {
                 Button(
                     onClick = {
                         scope.launch(Dispatchers.IO) {
@@ -287,7 +287,7 @@ fun TicketOrdenDetalle(
             HorizontalDivider()
 
             Text(
-                "Costo total: \$${data.orden.costos.costo}",
+                "Costo total: $${data.orden.costos.costo}",
                 style = MaterialTheme.typography.titleMedium
             )
         }

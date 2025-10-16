@@ -286,7 +286,7 @@ fun RegistroOrdenScreen(
                 checked = aceptaPublicidad,
                 onCheckedChange = { aceptaPublicidad = it }
             )
-            Text("Acepto recibir publicidad")
+            Text("Acepto que el prestador de servicios envíe publicidad sobre bienes y servicios.")
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
