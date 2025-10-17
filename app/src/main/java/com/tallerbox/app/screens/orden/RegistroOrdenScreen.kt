@@ -39,8 +39,12 @@ fun RegistroOrdenScreen(
     val clienteDao = db.clienteDao()
     val vehiculoDao = db.vehiculoDao()
     val ordenDao = db.ordenServicioDao()
-
-    var numeroOrden by remember { mutableStateOf("ORD-${System.currentTimeMillis()}") }
+    val formatter = remember { SimpleDateFormat("ddMMMyyHHmm", Locale("es", "MX")) }
+    var numeroOrden by remember {
+        mutableStateOf(
+            "ORD" + formatter.format(Date()).uppercase(Locale.getDefault())
+        )
+    }
     val dateFormatter = remember { SimpleDateFormat("EEE, dd MMM", Locale("es", "MX")) }
     var fechaIngreso by remember { mutableStateOf(Date()) }
     var fechaEntregaEstimado by remember { mutableStateOf(Date()) }

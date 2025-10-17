@@ -45,7 +45,7 @@ fun ListaOrdenesScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(top = 60.dp, bottom = 20.dp, start = 20.dp, end = 20.dp)
-            .verticalScroll(scrollState), // 👈 hace que todo el contenido sea desplazable
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Órdenes", style = MaterialTheme.typography.headlineSmall)
