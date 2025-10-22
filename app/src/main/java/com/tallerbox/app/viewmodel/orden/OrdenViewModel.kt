@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import com.tallerbox.app.model.orden.OrdenServicioEntity
 import com.tallerbox.app.repository.OrdenRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -23,6 +24,7 @@ class OrdenViewModel(private val repo: OrdenRepository) : ViewModel() {
     fun setClienteFilter(clienteId: Int?) { _clienteFilter.value = clienteId }
     fun setVehiculoFilter(vehiculoId: Int?) { _vehiculoFilter.value = vehiculoId }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     val ordenesState: StateFlow<OrdenUiState> = combine(_vehiculoFilter, _clienteFilter) { vehiculoId, clienteId ->
         Pair(vehiculoId, clienteId)
     }.flatMapLatest { (vehiculoId, clienteId) ->
