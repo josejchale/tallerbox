@@ -62,11 +62,7 @@ object PdfGenerator {
             style = Paint.Style.STROKE
             isAntiAlias = true
         }
-        val paintFill = Paint().apply {
-            color = Color.BLACK
-            style = Paint.Style.FILL
-            isAntiAlias = true
-        }
+
         val paintX = Paint().apply {
             color = Color.BLACK
             textSize = 12f
@@ -115,37 +111,45 @@ object PdfGenerator {
         val leftColX = margin
         val leftColRight = margin + blockWidth
         val leftRow1 = blockTop + 20f
-        val leftRow2 = leftRow1 + 26f
-        val leftRow3 = leftRow2 + 26f
+        val rowClientHeight = (blockHeight - 20f) / 3f // 24f
+        val leftRow2 = leftRow1 + rowClientHeight
+        val leftRow3 = leftRow2 + rowClientHeight
         canvas.drawLine(leftColX, leftRow1, leftColRight, leftRow1, paintLine)
         canvas.drawLine(leftColX, leftRow2, leftColRight, leftRow2, paintLine)
         canvas.drawLine(leftColX, leftRow3, leftColRight, leftRow3, paintLine)
 
-        // ==================================================================
-        // === INICIO DE SECCIÓN MODIFICADA ===
-        // ==================================================================
-
-        // Right block internal separators: create 3 rows for N° orden, ingreso, entrega
+        // Right block internal separators (3 rows)
         val rightColX = margin + blockWidth
         val rightColRight = pageWidth - margin
         val rightRow1 = blockTop + 20f
-        val rowDataHeight = (blockHeight - 20f) / 3f // (92-20)/3 = 24f
+        val rowDataHeight = (blockHeight - 20f) / 3f // 24f
         val rightRow2 = rightRow1 + rowDataHeight
         val rightRow3 = rightRow2 + rowDataHeight
         canvas.drawLine(rightColX, rightRow1, rightColRight, rightRow1, paintLine)
         canvas.drawLine(rightColX, rightRow2, rightColRight, rightRow2, paintLine)
         canvas.drawLine(rightColX, rightRow3, rightColRight, rightRow3, paintLine)
-        // La línea inferior (rightRow4) es dibujada por el rectángulo exterior del bloque
 
-        // Vertical line in right block - ELIMINADA
-        // val rightLabelWidth = 110f
-        // canvas.drawLine(rightColX + rightLabelWidth, blockTop, rightColX + rightLabelWidth, blockTop + blockHeight, paintLine)
+        // ==================================================================
+        // === INICIO DE CAMBIOS (Ajustes de ancho y línea en CLIENTE) ===
+        // ==================================================================
 
-        // Fill client and order data text
+        // **CAMBIO 1: Ajustar ancho de etiqueta para ORDEN DE SERVICIO**
+        // Aumentar rightLabelWidth de 110f a 130f para dar más espacio a las etiquetas largas
+        val rightLabelWidth = 130f
+        canvas.drawLine(rightColX + rightLabelWidth, blockTop + 20f, rightColX + rightLabelWidth, blockTop + blockHeight, paintLine)
+
+        // **CAMBIO 2: Añadir la línea vertical en DATOS DEL CLIENTE**
+        // Usaremos el mismo ancho para la etiqueta del cliente para mantener la simetría
+        val clientLabelWidth = 130f
+        canvas.drawLine(leftColX + clientLabelWidth, blockTop + 20f, leftColX + clientLabelWidth, blockTop + blockHeight, paintLine)
+
+
+        // === Llenado de Datos ===
+
         val cliente = data.cliente
         val orden = data.orden
 
-        // Left side fields
+        // Left side fields (Cliente)
         val nombre = cliente?.nombreCompleto ?: "—"
         val direccion = buildString {
             append(cliente?.calle ?: "")
@@ -157,44 +161,59 @@ object PdfGenerator {
         }.ifBlank { "—" }
         val celular = cliente?.telefono ?: "—"
 
-        // Draw left labels on left column (labels bold)
+        // Draw left labels and values
         val labelOffset = 6f
-        var ly = leftRow1 + 16f
-        canvas.drawText("NOMBRE:", leftColX + labelOffset, ly, paintHeading)
-        canvas.drawText(nombre, leftColX + 70f, ly, paintText)
-        ly = leftRow2 + 16f
-        canvas.drawText("DIRECCIÓN:", leftColX + labelOffset, ly, paintHeading)
-        canvas.drawText(direccion, leftColX + 70f, ly, paintText)
-        ly = leftRow3 + 16f
-        canvas.drawText("NÚMERO CELULAR:", leftColX + labelOffset, ly, paintHeading)
-        canvas.drawText(celular, leftColX + 110f, ly, paintText)
+        val verticalOffset = 16f // Centrado vertical para filas de 24f
 
-        // Right side fields - **MODIFICADO**
+        val clientValueX = leftColX + clientLabelWidth + labelOffset
+        val clientValueMaxWidth = blockWidth - clientLabelWidth - 12f // 6f padding izq/der
+
+        var ly = leftRow1 + verticalOffset
+        canvas.drawText("NOMBRE:", leftColX + labelOffset, ly, paintHeading)
+        // **Ajustado**: Usar multilínea con offset Y ajustado y ancho fijo
+        drawMultilineText(canvas, nombre, clientValueX, leftRow1 + verticalOffset - 2f, clientValueMaxWidth, paintText)
+
+
+        ly = leftRow2 + verticalOffset
+        canvas.drawText("DIRECCIÓN:", leftColX + labelOffset, ly, paintHeading)
+        // **Ajustado**: Usar multilínea con offset Y ajustado y ancho fijo
+        drawMultilineText(canvas, direccion, clientValueX, leftRow2 + verticalOffset - 2f, clientValueMaxWidth, paintText)
+
+        ly = leftRow3 + verticalOffset
+        canvas.drawText("NÚMERO CELULAR:", leftColX + labelOffset, ly, paintHeading)
+        // **Ajustado**: Usar multilínea con offset Y ajustado y ancho fijo
+        drawMultilineText(canvas, celular, clientValueX, leftRow3 + verticalOffset - 2f, clientValueMaxWidth, paintText)
+
+
+        // Right side fields (Orden de Servicio)
         val numeroOrden = orden.numeroOrden ?: "—"
         val fechaIngreso = try { dateFormatter.format(orden.fechaIngreso) } catch (_: Exception) { "—" }
         val fechaEntrega = orden.fechaEntregaEstimado?.let { dateFormatter.format(it) } ?: "—"
 
-        val rightValueXOffset = 6f // Espacio desde el borde izquierdo de la celda
-        val rightLabelYOffset = 13f // Posición Y para la etiqueta (relativa al inicio de la fila)
-        val rightValueYOffset = 22f // Posición Y para el valor (relativa al inicio de la fila)
+        val rightLabelX = rightColX + 6f
+        val rightValueX = rightColX + rightLabelWidth + 6f
+        val rightValueMaxWidth = blockWidth - rightLabelWidth - 12f
 
         // Fila 1: Número de Orden
-        canvas.drawText("NÚMERO DE ORDEN:", rightColX + rightValueXOffset, rightRow1 + rightLabelYOffset, paintHeading)
-        canvas.drawText(numeroOrden, rightColX + rightValueXOffset, rightRow1 + rightValueYOffset, paintText)
+        var ry = rightRow1 + verticalOffset
+        canvas.drawText("NÚMERO DE ORDEN:", rightLabelX, ry, paintHeading)
+        drawMultilineText(canvas, numeroOrden, rightValueX, rightRow1 + verticalOffset - 2f, rightValueMaxWidth, paintText)
 
         // Fila 2: Fecha de Ingreso
-        canvas.drawText("FECHA DE INGRESO:", rightColX + rightValueXOffset, rightRow2 + rightLabelYOffset, paintHeading)
-        canvas.drawText(fechaIngreso, rightColX + rightValueXOffset, rightRow2 + rightValueYOffset, paintText)
+        ry = rightRow2 + verticalOffset
+        canvas.drawText("FECHA DE INGRESO:", rightLabelX, ry, paintHeading)
+        drawMultilineText(canvas, fechaIngreso, rightValueX, rightRow2 + verticalOffset - 2f, rightValueMaxWidth, paintText)
 
         // Fila 3: Fecha de Entrega
-        canvas.drawText("FECHA DE ENTREGA:", rightColX + rightValueXOffset, rightRow3 + rightLabelYOffset, paintHeading)
-        canvas.drawText(fechaEntrega, rightColX + rightValueXOffset, rightRow3 + rightValueYOffset, paintText)
+        ry = rightRow3 + verticalOffset
+        canvas.drawText("FECHA DE ENTREGA:", rightLabelX, ry, paintHeading)
+        drawMultilineText(canvas, fechaEntrega, rightValueX, rightRow3 + verticalOffset - 2f, rightValueMaxWidth, paintText)
 
         // Move y below the blocks
         y = blockTop + blockHeight + 18f
 
         // ==================================================================
-        // === FIN DE SECCIÓN MODIFICADA ===
+        // === FIN DE CAMBIOS ===
         // ==================================================================
 
         // === DATOS DEL VEHÍCULO (tabla con celdas) ===
@@ -214,26 +233,46 @@ object PdfGenerator {
         val vehTableLeft = margin
         val vehTableRight = pageWidth - margin
         val vehTableWidth = vehTableRight - vehTableLeft
-        val vehColWidth = vehTableWidth / columns.size
+
+        // ** Anchos de columna personalizados **
+        // Total = 1.0
+        val colWidths = floatArrayOf(
+            vehTableWidth * 0.17f, // MARCA
+            vehTableWidth * 0.17f, // MODELO
+            vehTableWidth * 0.10f, // AÑO (Corto)
+            vehTableWidth * 0.16f, // COLOR
+            vehTableWidth * 0.12f, // PLACAS (Corto)
+            vehTableWidth * 0.28f  // VIN (Largo)
+        )
+
         // header row box
         var vx = vehTableLeft
         val headerTop = vehicleTop
         val headerBottom = headerTop + 18f
-        for (c in columns) {
-            canvas.drawRect(vx, headerTop, vx + vehColWidth, headerBottom, paintLine)
+        // Loop por índice para usar anchos personalizados
+        for (i in columns.indices) {
+            val c = columns[i]
+            val w = colWidths[i]
+            canvas.drawRect(vx, headerTop, vx + w, headerBottom, paintLine)
             val tx = vx + 4f
             val ty = headerTop + 14f
             canvas.drawText(c, tx, ty, paintHeading)
-            vx += vehColWidth
+            vx += w
         }
+
         // values row
         val valuesTop = headerBottom
         val valuesBottom = valuesTop + 20f
         vx = vehTableLeft
-        for (v in vehValues) {
-            canvas.drawRect(vx, valuesTop, vx + vehColWidth, valuesBottom, paintLine)
-            canvas.drawText(v, vx + 4f, valuesTop + 14f, paintText)
-            vx += vehColWidth
+        // Loop por índice para usar anchos personalizados
+        for (i in vehValues.indices) {
+            val v = vehValues[i]
+            val w = colWidths[i]
+            canvas.drawRect(vx, valuesTop, vx + w, valuesBottom, paintLine)
+            // ** Se mantiene: Usar multilínea para todos los valores **
+            val valueMaxWidth = w - 8f // 4f padding izq/der
+            drawMultilineText(canvas, v, vx + 4f, valuesTop + 14f, valueMaxWidth, paintText)
+            vx += w
         }
 
         y = valuesBottom + 18f
@@ -275,7 +314,7 @@ object PdfGenerator {
 
         // Draw header labels for left column
         var headerX = margin
-        var headerY = condStartY
+        val headerY = condStartY
         for (i in labels.indices) {
             val w = labelWidths[i]
             canvas.drawRect(headerX, headerY, headerX + w, headerY + condRowHeight, paintLine)
@@ -305,6 +344,7 @@ object PdfGenerator {
         fun getCondValueByName(name: String): String? {
             try {
                 // Acceso directo a propiedades (usa el nombre de la propiedad tal como existe en tu modelo)
+                // *** Se agregaron safe calls (?.) para evitar crashes si 'condiciones' es null ***
                 return when (name) {
                     "Espejos" -> condToString(condiciones?.espejos)
                     "Asientos" -> condToString(condiciones?.asientos)
@@ -331,16 +371,16 @@ object PdfGenerator {
         }
 
         // Draw rows left column
-        var rowY = condStartY + condRowHeight
+        var rowYLeft = condStartY + condRowHeight // Rastreador de 'y' para la columna izquierda
         for (item in itemsLeft) {
             var colX = margin
             // draw 4 cells
             for (i in 0 until 4) {
                 val w = labelWidths[i]
-                canvas.drawRect(colX, rowY, colX + w, rowY + condRowHeight, paintLine)
+                canvas.drawRect(colX, rowYLeft, colX + w, rowYLeft + condRowHeight, paintLine)
                 if (i == 0) {
                     // item label
-                    canvas.drawText(item, colX + 4f, rowY + 13f, paintText)
+                    canvas.drawText(item, colX + 4f, rowYLeft + 13f, paintText)
                 }
                 colX += w
             }
@@ -355,22 +395,22 @@ object PdfGenerator {
             }
             if (markCol >= 1) {
                 val xMark = margin + labelWidths.take(markCol).sum() + (labelWidths[markCol] / 2f) - 4f
-                val yMark = rowY + condRowHeight - 6f
+                val yMark = rowYLeft + condRowHeight - 6f
                 canvas.drawText("X", xMark, yMark, paintX)
             }
 
-            rowY += condRowHeight
+            rowYLeft += condRowHeight
         }
 
         // Draw rows right column
-        rowY = condStartY + condRowHeight
+        var rowYRight = condStartY + condRowHeight // Rastreador de 'y' para la columna derecha
         for (item in itemsRight) {
             var colX = margin + condColWidth + condColGap
             for (i in 0 until 4) {
                 val w = labelWidths[i]
-                canvas.drawRect(colX, rowY, colX + w, rowY + condRowHeight, paintLine)
+                canvas.drawRect(colX, rowYRight, colX + w, rowYRight + condRowHeight, paintLine)
                 if (i == 0) {
-                    canvas.drawText(item, colX + 4f, rowY + 13f, paintText)
+                    canvas.drawText(item, colX + 4f, rowYRight + 13f, paintText)
                 }
                 colX += w
             }
@@ -385,47 +425,68 @@ object PdfGenerator {
             }
             if (markCol >= 1) {
                 val xMark = margin + condColWidth + condColGap + labelWidths.take(markCol).sum() + (labelWidths[markCol] / 2f) - 4f
-                val yMark = rowY + condRowHeight - 6f
+                val yMark = rowYRight + condRowHeight - 6f
                 canvas.drawText("X", xMark, yMark, paintX)
             }
 
-            rowY += condRowHeight
+            rowYRight += condRowHeight
         }
 
         // Advance y below both columns
-        y = rowY + 12f
+        y = maxOf(rowYLeft, rowYRight) + 12f // Usa el valor 'y' MÁXIMO de ambas columnas
 
-        // Observaciones (si existen)
-        val observ = condiciones?.observaciones?.takeIf { it.isNotBlank() }
-        if (!observ.isNullOrBlank()) {
-            canvas.drawText("Observaciones:", margin, y, paintHeading)
-            y += 12f
-            y = drawMultilineText(canvas, observ, margin + 6f, y, pageWidth - margin * 2 - 12f, paintText)
-            y += 8f
-        }
 
-        // === TEXTO LEGAL Y COSTO ===
+        // **INICIO DE CAMBIO DE TEXTO LEGAL Y FIRMAS**
+
+        // 1. Eliminar Observaciones (si existen) y el texto legal anterior:
+        // Se borra el bloque que dibuja "Observaciones:"
+
+        // 2. Dibujar el primer párrafo legal (usando paintText)
+        val legal1 = "En caso de que el presupuesto no sea aceptado, el consumidor deberá cubrir exclusivamente el costo de la revisión y\n" +
+                "diagnóstico. El prestador del servicio se compromete a devolver la motocicleta en las mismas condiciones en las que fue\n" +
+                "entregada, salvo las consecuencias inevitables derivadas del diagnóstico."
+        y = drawMultilineText(canvas, legal1, margin, y, pageWidth - margin * 2, paintText)
+        y += 12f
+
+        // 3. Costo de la revisión y líneas de firma del prestador
         val costo = orden.costos?.costo ?: 0.0
-        canvas.drawText("Costo de la revisión: $${String.format(Locale("es","MX"), "%.2f", costo)}", margin, y, paintHeading)
-        y += 16f
+        val costoStr = String.format(Locale("es","MX"), "%.2f", costo)
 
-        val legal = "En caso de que el presupuesto no sea aceptado, el consumidor deberá cubrir exclusivamente el costo de la revisión y diagnóstico. " +
-                "El prestador del servicio se compromete a devolver la motocicleta en las mismas condiciones en las que fue entregada."
-        y = drawMultilineText(canvas, legal, margin, y, pageWidth - margin * 2, paintSmall)
-        y += 10f
+        // Costo de la revisión
+        canvas.drawText("Costo de la revisión: $$costoStr", margin, y, paintText)
+        // Dibujar línea de firma del prestador (se usa el mismo estilo que la otra firma, pero se ajusta)
+        val lineLength = 220f
+        val lineY1 = y + 16f
+        canvas.drawLine(margin, lineY1, margin + lineLength, lineY1, paintLine)
+        canvas.drawText("Firma del prestador de servicios:", margin, lineY1 + 14f, paintText)
 
-        val clausula = "El consumidor: ( ) Acepta que el prestador del servicio pueda ceder o transmitir el vehículo, sus partes o piezas, a terceros (como torneros o soldadores) para fines de reparación. ( ) No acepta que el prestador de servicios utilice publicidad sobre bienes y servicios."
-        y = drawMultilineText(canvas, clausula, margin, y, pageWidth - margin * 2, paintSmall)
+        // Fecha (al lado de la firma del prestador)
+        val fechaX = margin + lineLength + 20f
+        canvas.drawLine(fechaX, lineY1, fechaX + 150f, lineY1, paintLine)
+        canvas.drawText("Fecha: ${dateFormatter.format(Date())}", fechaX, lineY1 + 14f, paintText)
+        y = lineY1 + 28f
+
+        // 4. Segundo párrafo legal/cláusula (más largo, usar paintSmall)
+        val clausulaNueva = "El consumidor: ( ) Acepta que el prestador del servicio pueda ceder o transmitir el vehículo, sus partes o piezas, a terceros " +
+                "(como torneros, soldadores u otros especialistas), ya sea con fines de reparación o para la obtención de cotizaciones de " +
+                "costos y precios. Esto será permitido únicamente en caso de ser estrictamente necesario y siempre que el propietario sea " +
+                "previamente informado de estas acciones y haya dado su consentimiento para el traslado del vehículo o de sus componentes."
+        y = drawMultilineText(canvas, clausulaNueva, margin, y, pageWidth - margin * 2, paintSmall)
+        y += 8f
+
+        // 5. Cláusula de publicidad
+        val publicidad = "( ) Acepta ( ) No acepta que el prestador de servicios envíe publicidad sobre bienes y servicios."
+        y = drawMultilineText(canvas, publicidad, margin, y, pageWidth - margin * 2, paintSmall)
         y += 18f
 
-        // === FIRMAS ===
+        // 6. Firma del consumidor y Nota Importante
         val signY = y + 20f
-        canvas.drawLine(margin, signY, margin + 220f, signY, paintLine)
-        canvas.drawText("Firma del prestador de servicios", margin, signY + 14f, paintSmall)
 
-        val consumerX = margin + 260f
-        canvas.drawLine(consumerX, signY, consumerX + 220f, signY, paintLine)
-        canvas.drawText("Firma de autorización del consumidor", consumerX, signY + 14f, paintSmall)
+        // Firma de autorización del consumidor (más larga, centrada o en el lado derecho)
+        val consumerX = margin + (pageWidth - margin * 2 - lineLength) // Iniciar más a la derecha para no chocar
+        val consumerLineWidth = pageWidth - margin - consumerX
+        canvas.drawLine(consumerX, signY, pageWidth - margin, signY, paintLine)
+        canvas.drawText("Firma de autorización del consumidor:", consumerX, signY + 14f, paintText)
 
         // Draw signature image if exists
         orden.firmaClienteBase64?.takeIf { it.isNotBlank() }?.let { b64 ->
@@ -435,14 +496,22 @@ object PdfGenerator {
                 val scale = minOf(maxW / sigBitmap.width, 1f)
                 val sigW = (sigBitmap.width * scale).toInt()
                 val sigH = (sigBitmap.height * scale).toInt()
-                val dest = Rect(consumerX.toInt(), (signY - sigH).toInt(), (consumerX + sigW).toInt(), signY.toInt())
+                // Centrar firma sobre la línea
+                val sigDrawX = consumerX + (consumerLineWidth / 2f) - (sigW / 2f)
+                val dest = Rect(sigDrawX.toInt(), (signY - sigH).toInt(), (sigDrawX + sigW).toInt(), signY.toInt())
                 canvas.drawBitmap(sigBitmap, null, dest, null)
             } catch (_: Exception) {}
         }
 
-        // Final note
-        val note = "NOTA: Al firmar este documento, el consumidor declara haber leído y aceptado las condiciones del servicio del taller."
-        drawMultilineText(canvas, note, margin, signY + 40f, pageWidth - margin * 2, paintSmall)
+        y = signY + 30f
+
+        // Final note (NOTA IMPORTANTE)
+        val note = "NOTA IMPORTANTE: Al firmar este documento, el consumidor declara haber leído y estar de acuerdo con el reglamento\n" +
+                "interno del taller mecánico, del cual ha sido informado previamente."
+        y = drawMultilineText(canvas, note, margin, y, pageWidth - margin * 2, paintSmall.apply { typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD) })
+
+        // **FIN DE CAMBIO DE TEXTO LEGAL Y FIRMAS**
+
 
         // Finish page and write
         doc.finishPage(page)
