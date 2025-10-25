@@ -313,9 +313,22 @@ fun RegistroOrdenScreen(
                 condiciones = CondicionVehiculo(
                     espejos = espejos,
                     asientos = asientos,
-                    // ... demás campos
-                    observaciones = notas.ifBlank { null }
+                    faroDelantero = faroDelantero,
+                    luzTrasera = luzTrasera,
+                    direccionales = direccionales,
+                    cubiertas = cubiertas,
+                    taponGasolina = taponGasolina,
+                    pedales = pedales,
+                    parabrisas = parabrisas,
+                    claxon = claxon,
+                    taponAceite = taponAceite,
+                    taponRadiador = taponRadiador,
+                    filtroAire = filtroAire,
+                    bateria = bateria,
+                    llaves = llaves,
+                    observaciones = observacionesCond.ifBlank { null }
                 ),
+
                 costos = CostosOrden(costo.toDoubleOrNull() ?: 0.0),
                 firmaClienteBase64 = firmaBase64,
                 aceptaEnvioPublicidad = aceptaPublicidad,
