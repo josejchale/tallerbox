@@ -15,13 +15,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistroVehiculoScreen(navController: NavHostController, clienteId: Int?) {
 
-    if (clienteId == null) {
-        Text("Error: cliente no especificado")
-        return
-    }
+
+
 
     var marca by remember { mutableStateOf(value = "") }
     var modelo by remember { mutableStateOf(value = "") }
@@ -39,6 +38,11 @@ fun RegistroVehiculoScreen(navController: NavHostController, clienteId: Int?) {
     val context = LocalContext.current
     val db = AppDatabase.getDatabase(context)
     val vehiculoDao = db.vehiculoDao()
+    val clienteDao = db.clienteDao()
+
+    val clientes by clienteDao.obtenerTodosFlow().collectAsState(initial = emptyList())
+    var clienteSeleccionadoId by remember { mutableStateOf(clienteId) }
+    var clienteExpanded by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -48,6 +52,38 @@ fun RegistroVehiculoScreen(navController: NavHostController, clienteId: Int?) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(text = "Registro de Motos", style = MaterialTheme.typography.headlineSmall)
+        Text("Selecciona un cliente", style = MaterialTheme.typography.labelMedium)
+
+        ExposedDropdownMenuBox(
+            expanded = clienteExpanded,
+            onExpandedChange = { clienteExpanded = it }
+        ) {
+            OutlinedTextField(
+                value = clientes.find { it.id == clienteSeleccionadoId }?.nombreCompleto ?: "",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Cliente") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = clienteExpanded) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+            )
+            ExposedDropdownMenu(
+                expanded = clienteExpanded,
+                onDismissRequest = { clienteExpanded = false }
+            ) {
+                clientes.forEach { cliente ->
+                    DropdownMenuItem(
+                        text = { Text(cliente.nombreCompleto) },
+                        onClick = {
+                            clienteSeleccionadoId = cliente.id
+                            clienteExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+
 
         OutlinedTextField(
             value = marca,
@@ -142,7 +178,7 @@ fun RegistroVehiculoScreen(navController: NavHostController, clienteId: Int?) {
                         if (camposValidos){
 
                             val vehiculo = VehiculoEntity(
-                                clienteId = clienteId,
+                                clienteId = clienteSeleccionadoId!!,
                                 marca = marca,
                                 modelo= modelo,
                                 ano=ano,
@@ -157,7 +193,7 @@ fun RegistroVehiculoScreen(navController: NavHostController, clienteId: Int?) {
                                     launch(Dispatchers.Main) {
                                         Toast.makeText(context, "Vehiculo registrado", Toast.LENGTH_SHORT).show()
                                         // Navega a RegistroOrden con el id recién creado
-                                        navController.navigate("registro_orden/${clienteId}/${newId}")
+                                        navController.navigate("registro_orden/${clienteSeleccionadoId}/${newId}")
                                     }
                                 } catch (_: Exception) {
                                     launch(Dispatchers.Main) {
@@ -194,6 +230,9 @@ fun RegistroVehiculoScreen(navController: NavHostController, clienteId: Int?) {
             }
         )
     }
+
+
+
 
 }
 

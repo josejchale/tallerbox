@@ -171,7 +171,7 @@ fun RegistroOrdenScreen(
         showEntregaPicker
 
 
-        if (clienteId == null) {
+
             Text("Seleccionar cliente", style = MaterialTheme.typography.labelMedium)
             var clienteExpanded by remember { mutableStateOf(false) }
 
@@ -202,9 +202,7 @@ fun RegistroOrdenScreen(
                     }
                 }
             }
-        }
 
-        if (vehiculoId == null) {
             Text("Seleccionar vehículo", style = MaterialTheme.typography.labelMedium)
             var vehiculoExpanded by remember { mutableStateOf(false) }
 
@@ -235,7 +233,6 @@ fun RegistroOrdenScreen(
                     }
                 }
             }
-        }
 
 
         OutlinedTextField(
