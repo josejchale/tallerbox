@@ -68,7 +68,7 @@ fun ListaVehiculosScreen(
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(lista) { vehiculo ->
                             VehiculoCard(vehiculo = vehiculo, onClick = {
-                                navController.navigate("lista_ordenes/${vehiculo.id}")
+                                navController.navigate("lista_ordenes_vehiculo/${vehiculo.id}")
                             })
                         }
                     }

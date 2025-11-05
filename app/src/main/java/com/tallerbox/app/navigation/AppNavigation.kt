@@ -71,8 +71,8 @@ fun AppNavigation(navController: NavHostController) {
             ListaOrdenesScreen(navController)
         }
 
-        // Lista de órdenes por cliente
-        composable("lista_ordenes/{clienteId}") { backStackEntry ->
+// Lista de órdenes por cliente
+        composable("lista_ordenes_cliente/{clienteId}") { backStackEntry ->
             val clienteId = backStackEntry.arguments?.getString("clienteId")?.toIntOrNull()
             ListaOrdenesScreen(navController, clienteId = clienteId)
         }
@@ -83,10 +83,10 @@ fun AppNavigation(navController: NavHostController) {
             DetalleOrdenScreen(navController, ordenId = ordenId)
         }
 
-        // Lista de órdenes por vehículo
-        composable("lista_ordenes/{vehiculoId}") { backStackEntry ->
+// Lista de órdenes por vehículo
+        composable("lista_ordenes_vehiculo/{vehiculoId}") { backStackEntry ->
             val vehiculoId = backStackEntry.arguments?.getString("vehiculoId")?.toIntOrNull()
-            ListaOrdenesScreen(navController, vehiculoId = vehiculoId )
+            ListaOrdenesScreen(navController, vehiculoId = vehiculoId)
         }
 
     }

@@ -67,7 +67,7 @@ data class OrdenServicioEntity(
 
     // relaciones
     val clienteId: Int,
-    val vehiculoId: Int? = null,
+    val vehiculoId: Int?,
 
     // identificación y fechas
     val numeroOrden: String,
