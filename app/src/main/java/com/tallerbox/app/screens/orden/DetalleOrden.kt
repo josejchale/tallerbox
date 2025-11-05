@@ -10,14 +10,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.tallerbox.app.db.AppDatabase
 import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import com.tallerbox.app.repository.OrdenRepository
 import com.tallerbox.app.utils.PdfGenerator
-import com.tallerbox.app.viewmodel.orden.OrdenViewModel
-import com.tallerbox.app.viewmodel.orden.OrdenViewModelFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
@@ -27,6 +24,7 @@ import java.util.*
 @Composable
 fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
     val context = LocalContext.current
+
     if (ordenId == null) {
         Text("Orden no especificada", color = MaterialTheme.colorScheme.error)
         return
@@ -34,10 +32,22 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
 
     val db = AppDatabase.getDatabase(context)
     val repo = OrdenRepository(db.ordenServicioDao())
-    val vm: OrdenViewModel = viewModel(factory = OrdenViewModelFactory(repo))
-    val detalleResult by vm.detalle.collectAsState()
 
-    LaunchedEffect(ordenId) { vm.cargarDetalle(ordenId) }
+    // 🔹 Estado local para manejar la carga de datos
+    var detalleResult by remember { mutableStateOf<Result<OrdenConClienteYVehiculo?>?>(null) }
+    val scope = rememberCoroutineScope()
+
+    // 🔹 Cargar detalle al iniciar
+    LaunchedEffect(ordenId) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val data = repo.obtenerOrdenConRelaciones(ordenId)
+                detalleResult = Result.success(data)
+            } catch (e: Exception) {
+                detalleResult = Result.failure(e)
+            }
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -48,21 +58,31 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
     ) {
         item {
             when {
-                detalleResult.isSuccess && detalleResult.getOrNull() == null -> {
+                detalleResult == null -> {
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
                 }
-                detalleResult.isFailure -> {
+
+                detalleResult!!.isFailure -> {
                     Text("Error al cargar la orden", color = MaterialTheme.colorScheme.error)
                 }
-                else -> {
-                    val data = detalleResult.getOrNull()
+
+                detalleResult!!.isSuccess -> {
+                    val data = detalleResult!!.getOrNull()
                     if (data == null) {
                         Text("Orden no encontrada", style = MaterialTheme.typography.bodyMedium)
                     } else {
                         TicketOrdenDetalle(data, ordenId, navController) {
-                            vm.cargarDetalle(ordenId)
+                            // Recargar después de actualizar estado
+                            scope.launch(Dispatchers.IO) {
+                                try {
+                                    val recarga = repo.obtenerOrdenConRelaciones(ordenId)
+                                    detalleResult = Result.success(recarga)
+                                } catch (e: Exception) {
+                                    detalleResult = Result.failure(e)
+                                }
+                            }
                         }
                     }
                 }
@@ -74,18 +94,23 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
         }
 
         item {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(onClick = { navController.navigate("main") }, modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = { navController.navigate("main") },
+                    modifier = Modifier.weight(1f)
+                ) {
                     Text("Volver")
                 }
 
-                // variables capturadas en el scope composable, fuera del onClick
                 val contextForPdf = LocalContext.current
                 val scopeForPdf = rememberCoroutineScope()
 
                 Button(
                     onClick = {
-                        val data = detalleResult.getOrNull()
+                        val data = detalleResult?.getOrNull()
                         if (data == null) {
                             Toast.makeText(contextForPdf, "Orden no cargada", Toast.LENGTH_SHORT).show()
                             return@Button
@@ -93,7 +118,7 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
 
                         scopeForPdf.launch(Dispatchers.IO) {
                             try {
-                                val filename = "orden_${data.orden.numeroOrden ?: data.orden.id}.pdf"
+                                val filename = "orden_${data.orden.numeroOrden}.pdf"
                                 val outFile = File(contextForPdf.cacheDir, filename)
                                 PdfGenerator.generateOrdenPdf(contextForPdf, data, outFile)
 
@@ -105,7 +130,11 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
                                 }
                             } catch (e: Exception) {
                                 launch(Dispatchers.Main) {
-                                    Toast.makeText(contextForPdf, "Error generando PDF: ${e.message}", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(
+                                        contextForPdf,
+                                        "Error generando PDF: ${e.message}",
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             }
                         }
@@ -114,11 +143,11 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
                 ) {
                     Text("Enviar PDF")
                 }
-
             }
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -85,9 +85,8 @@ fun AppNavigation(navController: NavHostController) {
 
         // Lista de órdenes por vehículo
         composable("lista_ordenes/{vehiculoId}") { backStackEntry ->
-            val clienteId = backStackEntry.arguments?.getString("clienteId")?.toIntOrNull()
             val vehiculoId = backStackEntry.arguments?.getString("vehiculoId")?.toIntOrNull()
-            ListaOrdenesScreen(navController,clienteId = clienteId, vehiculoId = vehiculoId )
+            ListaOrdenesScreen(navController, vehiculoId = vehiculoId )
         }
 
     }

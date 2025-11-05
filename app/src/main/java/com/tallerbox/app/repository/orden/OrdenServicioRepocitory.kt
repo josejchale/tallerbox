@@ -12,8 +12,9 @@ class OrdenRepository(private val ordenDao: OrdenServicioDao) {
     fun obtenerPorClienteFlow(clienteId: Int): Flow<List<OrdenServicioEntity>> =
         ordenDao.obtenerPorClienteFlow(clienteId)
 
-    fun obtenerPorVehiculoFlow(vehiculoId: Int): Flow<List<OrdenServicioEntity>> =
-        ordenDao.obtenerPorVehiculoFlow(vehiculoId)
+    fun obtenerPorVehiculoFlow(vehiculoId: Int): Flow<List<OrdenServicioEntity>> {
+        return ordenDao.obtenerPorVehiculoFlow(vehiculoId)
+    }
 
     suspend fun obtenerOrdenConRelaciones(ordenId: Int): OrdenConClienteYVehiculo? =
         ordenDao.obtenerOrdenConRelaciones(ordenId)

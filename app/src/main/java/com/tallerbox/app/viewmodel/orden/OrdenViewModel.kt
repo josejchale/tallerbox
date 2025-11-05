@@ -3,74 +3,49 @@ package com.tallerbox.app.viewmodel.orden
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import com.tallerbox.app.model.orden.OrdenServicioEntity
 import com.tallerbox.app.repository.OrdenRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
-sealed class OrdenUiState {
-    object Loading : OrdenUiState()
-    data class SuccessList(val list: List<OrdenServicioEntity>) : OrdenUiState()
-    data class Error(val message: String) : OrdenUiState()
-}
 
 class OrdenViewModel(private val repo: OrdenRepository) : ViewModel() {
 
-    private val _clienteFilter = MutableStateFlow<Int?>(null)
-    private val _vehiculoFilter = MutableStateFlow<Int?>(null)
+    // 🔹 Todas las órdenes
+    val ordenes: StateFlow<List<OrdenServicioEntity>> =
+        repo.obtenerTodasFlow()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun setClienteFilter(clienteId: Int?) { _clienteFilter.value = clienteId }
-    fun setVehiculoFilter(vehiculoId: Int?) { _vehiculoFilter.value = vehiculoId }
+    // 🔹 Órdenes por cliente
+    fun obtenerPorCliente(clienteId: Int): StateFlow<List<OrdenServicioEntity>> =
+        repo.obtenerPorClienteFlow(clienteId)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val ordenesState: StateFlow<OrdenUiState> = combine(_vehiculoFilter, _clienteFilter) { vehiculoId, clienteId ->
-        Pair(vehiculoId, clienteId)
-    }.flatMapLatest { (vehiculoId, clienteId) ->
-        when {
-            vehiculoId != null -> repo.obtenerPorVehiculoFlow(vehiculoId)
-            clienteId != null -> repo.obtenerPorClienteFlow(clienteId)
-            else -> repo.obtenerTodasFlow()
-        }
-    }
-        .map<List<OrdenServicioEntity>, OrdenUiState> { OrdenUiState.SuccessList(it) }
-        .onStart { emit(OrdenUiState.Loading) }
-        .catch { emit(OrdenUiState.Error(it.message ?: "Error al cargar órdenes")) }
-        .stateIn(viewModelScope, SharingStarted.Lazily, OrdenUiState.Loading)
+    // 🔹 Órdenes por vehículo
+    fun obtenerPorVehiculo(vehiculoId: Int): StateFlow<List<OrdenServicioEntity>> =
+        repo.obtenerPorVehiculoFlow(vehiculoId)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private val _detalle = MutableStateFlow<Result<OrdenConClienteYVehiculo?>>(Result.success(null))
-    val detalle: StateFlow<Result<OrdenConClienteYVehiculo?>> = _detalle.asStateFlow()
-
-    fun cargarDetalle(ordenId: Int) {
+    // 🔹 CRUD básico
+    fun insertar(orden: OrdenServicioEntity, onComplete: (() -> Unit)? = null) {
         viewModelScope.launch {
-            try {
-                val r = repo.obtenerOrdenConRelaciones(ordenId)
-                _detalle.value = Result.success(r)
-            } catch (e: Exception) {
-                _detalle.value = Result.failure(e)
-            }
+            repo.insertar(orden)
+            onComplete?.invoke()
         }
     }
 
-    fun insertar(orden: OrdenServicioEntity, onComplete: (Long) -> Unit = {}) {
-        viewModelScope.launch {
-            val id = repo.insertar(orden)
-            onComplete(id)
-        }
-    }
-
-    fun actualizar(orden: OrdenServicioEntity, onComplete: () -> Unit = {}) {
+    fun actualizar(orden: OrdenServicioEntity, onComplete: (() -> Unit)? = null) {
         viewModelScope.launch {
             repo.actualizar(orden)
-            onComplete()
+            onComplete?.invoke()
         }
     }
 
-    fun eliminar(orden: OrdenServicioEntity, onComplete: () -> Unit = {}) {
+    fun eliminar(orden: OrdenServicioEntity, onComplete: (() -> Unit)? = null) {
         viewModelScope.launch {
             repo.eliminar(orden)
-            onComplete()
+            onComplete?.invoke()
         }
     }
 }
