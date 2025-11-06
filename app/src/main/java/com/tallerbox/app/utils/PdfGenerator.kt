@@ -8,6 +8,7 @@ import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.util.Base64
 import androidx.core.content.FileProvider
+import com.tallerbox.app.R
 import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import java.io.File
 import java.io.FileOutputStream
@@ -73,13 +74,48 @@ object PdfGenerator {
         var y = margin
 
         // === ENCABEZADO TALLER ===
-        canvas.drawText("TALLER DE MOTOS", margin, y, paintHeading)
-        y += 14f
-        canvas.drawText("~BOX HALACHÓ~", margin, y, paintHeading)
-        y += 12f
-        canvas.drawText("TELÉFONO: 999-333-68-77", margin, y, paintText)
-        y += 10f
-        canvas.drawText("DIRECCIÓN: CALLE 21 #30K ENTRE 10 Y 12 COL. SAN FRANCISCO", margin, y, paintText)
+
+// === ENCABEZADO TALLER ===
+
+        try {
+            val logoBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.moto)
+
+            // Escalar el logo a un tamaño manejable
+            val desiredWidth = 80f   // ancho deseado en puntos PDF (~1 pulgada)
+            val aspectRatio = logoBitmap.height.toFloat() / logoBitmap.width
+            val desiredHeight = desiredWidth * aspectRatio
+
+            // Posición (arriba a la izquierda)
+            val logoX = margin
+            val logoY = margin // o puedes usar y - 40f si quieres que esté más arriba
+
+            // Dibuja el logo ya escalado
+            val destRect = RectF(logoX, logoY, logoX + desiredWidth, logoY + desiredHeight)
+            canvas.drawBitmap(logoBitmap, null, destRect, null)
+
+            // Texto al lado derecho del logo
+            val textStartX = logoX + desiredWidth + 12f
+            val textY = logoY + 12f
+            canvas.drawText("TALLER DE MOTOS", textStartX, textY, paintHeading)
+            canvas.drawText("~BOX HALACHÓ~", textStartX, textY + 14f, paintHeading)
+            canvas.drawText("TELÉFONO: 999-333-68-77", textStartX, textY + 28f, paintText)
+            canvas.drawText("DIRECCIÓN: CALLE 21 #30K ENTRE 10 Y 12 COL. SAN FRANCISCO", textStartX, textY + 42f, paintText)
+
+            // Avanza el cursor de escritura después del encabezado
+            y = logoY + desiredHeight + 20f
+
+        } catch (e: Exception) {
+            // Fallback si hay error al cargar el logo
+            canvas.drawText("TALLER DE MOTOS", margin, y, paintHeading)
+            y += 14f
+            canvas.drawText("~BOX HALACHÓ~", margin, y, paintHeading)
+            y += 12f
+            canvas.drawText("TELÉFONO: 999-333-68-77", margin, y, paintText)
+            y += 10f
+            canvas.drawText("DIRECCIÓN: CALLE 21 #30K ENTRE 10 Y 12 COL. SAN FRANCISCO", margin, y, paintText)
+            y += 18f
+        }
+
 
         y += 18f
         // Título centrado: ORDEN DE SERVICIO
