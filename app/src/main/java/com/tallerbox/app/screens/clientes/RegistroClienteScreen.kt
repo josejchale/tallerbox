@@ -158,14 +158,20 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
             ) {
                 OutlinedTextField(
                     value = municipioSeleccionado,
-                    onValueChange = {},
-                    readOnly = true,
+                    onValueChange = {
+                        municipioSeleccionado = it
+                        errorMunicipio = it.isBlank()
+                    },
                     label = { Text("Municipio") },
                     isError = errorMunicipio,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedMunicipio)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .menuAnchor()
                 )
+
 
                 ExposedDropdownMenu(
                     expanded = expandedMunicipio,

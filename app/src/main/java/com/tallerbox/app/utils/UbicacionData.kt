@@ -1,26 +1,70 @@
 package com.tallerbox.app.utils
 
-val estados = listOf("Yucatan", "Campeche")
+val estados = listOf(
+    "Yucatán",
+    "Campeche",
+    "Quintana Roo",
+    "Tabasco",
+    "Chiapas",
+    "Veracruz",
+    "Oaxaca",
+    "Puebla",
+    "Tlaxcala",
+    "Ciudad de México",
+    "Estado de México",
+    "Morelos",
+    "Hidalgo",
+    "Guerrero",
+    "San Luis Potosí",
+    "Querétaro",
+    "Michoacán",
+    "Guanajuato",
+    "Colima",
+    "Jalisco",
+    "Tamaulipas",
+    "Nuevo León",
+    "Zacatecas",
+    "Aguascalientes",
+    "Nayarit",
+    "Durango",
+    "Coahuila",
+    "Sinaloa",
+    "Chihuahua",
+    "Sonora",
+    "Baja California Sur",
+    "Baja California"
+)
+
 
 val municipiosPorEstado = mapOf(
-    "Yucatan" to listOf(
-        "Abala", "Acanceh", "Akil", "Baca", "Bokoba", "Buctzotz", "Cacalchen", "Calotmul",
-        "Cansahcab", "Cantamayec", "Celestun", "Cenotillo", "Chacsinkin", "Chankom", "Chapab",
-        "Chemax", "Chichimila", "Chicxulub Pueblo", "Chikindzonot", "Chochola", "Chumayel",
-        "Conkal", "Cuncunul", "Cuzama", "Dzan", "Dzemul", "Dzidzantun", "Dzilam Gonzalez",
-        "Dzilam de Bravo", "Dzitas", "Dzoncauich", "Espita", "Halacho", "Hocaba", "Hoctun",
-        "Homun", "Huhi", "Hunucma", "Ixil", "Izamal", "Kanasin", "Kantunil", "Kaua", "Kinchil",
-        "Kopoma", "Mama", "Mani", "Maxcanu", "Mayapan", "Merida", "Mococha", "Motul", "Muna",
-        "Muxupip", "Opichen", "Oxkutzcab", "Panaba", "Peto", "Progreso", "Quintana Roo",
-        "Rio Lagartos", "Sacalum", "Samahil", "San Felipe", "Sanahcat", "Santa Elena", "Seye",
-        "Sinanche", "Sotuta", "Sucila", "Sudzal", "Suma", "Tahdziu", "Tahmek", "Teabo", "Tecoh",
-        "Tekal de Venegas", "Tekanto", "Tekax", "Tekit", "Tekom", "Telchac Pueblo", "Telchac Puerto",
-        "Temax", "Temozon", "Tepakan", "Tetiz", "Teya", "Ticul", "Timucuy", "Tinum", "Tixcacalcupul",
-        "Tixkokob", "Tixmehuac", "Tixpehual", "Tizimin", "Tunkas", "Tzucacab", "Uayma", "Ucu",
-        "Uman", "Valladolid", "Xocchel", "Yaxcaba", "Yaxkukul", "Yobain"
+    "Yucatán" to listOf(
+        "Halachó",
+        "Cepeda, Halachó",
+        "Cuch-Holoch, Halachó",
+        "Sihó, Halachó",
+        "Santa María Acú, Halachó",
+        "Kancabchén, Halachó",
+        "San Mateo, Halachó",
+        "Dzidzibachi, Halachó",
+        "Maxcanú",
+        "Kuchmil, Maxcanú",
+        "San Fernando, Maxcanú",
+        "Chunchucmil",
+        "Kinchil",
+        "Celestún"
     ),
     "Campeche" to listOf(
-        "Calakmul", "Calkini", "Campeche", "Candelaria", "Carmen", "Champoton",
-        "Escarcega", "Hecelchakan", "Hopelchen", "Palizada", "Tenabo"
+        "Calkiní",
+        "Nunkiní, Calkiní",
+        "Bécal, Calkiní",
+        "Santa Cruz Pueblo, Calkiní",
+        "Champotón",
+        "Hopelchén",
+        "Tenabo"
+    ),
+    "Quintana Roo" to listOf(
+        "Otro municipio"
     )
-)
+) + estados
+    .filterNot { it in listOf("Yucatán", "Campeche", "Quintana Roo") }
+    .associateWith { listOf("Otro municipio") }
