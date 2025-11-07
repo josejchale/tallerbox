@@ -412,12 +412,23 @@ object PdfGenerator {
 
         // CORRECCIÓN: Definición de itemsLeft e itemsRight
         val itemsLeft = listOf(
-            "Espejos", "Asientos", "Faro delantero", "Luz de paro", "Trasero",
-            "Direccionales", "Cubiertas", "Completas", "Tapón de gasolina"
+            "Espejos",
+            "Asientos",
+            "Faro delantero",
+            "Luz de trasera",
+            "Direccionales",
+            "Cubiertas",
+            "Tapón de gasolina"
         )
         val itemsRight = listOf(
-            "Pedales", "Parabrisas", "Claxon", "Tapón de aceite", "Tapón radiador",
-            "Filtro de aire", "Batería", "Llaves"
+            "Pedales",
+            "Parabrisas",
+            "Claxon",
+            "Tapón de aceite",
+            "Tapón radiador",
+            "Filtro de aire",
+            "Batería",
+            "Llaves"
         )
 
         val condStartY = y
