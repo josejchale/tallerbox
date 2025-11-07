@@ -51,7 +51,8 @@ val municipiosPorEstado = mapOf(
         "San Fernando, Maxcanú",
         "Chunchucmil",
         "Kinchil",
-        "Celestún"
+        "Celestún",
+        "Otro municipio"
     ),
     "Campeche" to listOf(
         "Calkiní",
@@ -60,7 +61,8 @@ val municipiosPorEstado = mapOf(
         "Santa Cruz Pueblo, Calkiní",
         "Champotón",
         "Hopelchén",
-        "Tenabo"
+        "Tenabo",
+        "Otro municipio"
     ),
     "Quintana Roo" to listOf(
         "Otro municipio"
