@@ -16,6 +16,18 @@ import com.tallerbox.app.model.cliente.ClienteEntity
 import com.tallerbox.app.viewmodel.cliente.ClienteViewModel
 import com.tallerbox.app.viewmodel.cliente.ClienteViewModelFactory
 import androidx.navigation.NavController
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.graphics.Color
+
 
 @Composable
 fun ListaClientesScreen(navController: NavController, vm: ClienteViewModel = viewModel(factory = ClienteViewModelFactory(LocalContext.current.applicationContext as Application))) {
@@ -35,10 +47,19 @@ fun ListaClientesScreen(navController: NavController, vm: ClienteViewModel = vie
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(clientes) { cliente ->
-                    ClienteCard(cliente = cliente, onClick = {
-                        // ejemplo: navegar a detalle o registrar vehículo pasando id
-                        navController.navigate("lista_vehiculo/${cliente.id}")
-                    })
+                    ClienteCard(
+                        cliente = cliente,
+                        onClick = {
+                            navController.navigate("lista_vehiculo/${cliente.id}")
+                        },
+                        onEditar = {
+                        //navController.navigate("editar_cliente/${cliente.id}")
+                        },
+                        onEliminar = {
+                        //vm.eliminarCliente(cliente)
+                        }
+                    )
+
                 }
             }
         }
@@ -57,16 +78,91 @@ fun ListaClientesScreen(navController: NavController, vm: ClienteViewModel = vie
 }
 
 @Composable
-private fun ClienteCard(cliente: ClienteEntity, onClick: () -> Unit) {
-    Card(modifier = Modifier
-        .fillMaxWidth()
-        .clickable(onClick = onClick)) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(text = cliente.nombreCompleto, style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = "Tel: ${cliente.telefono}", style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(text = "Calle ${cliente.calle},  ${cliente.numeroCasa ?: ""}, entre calles ${cliente.calle1} y ${cliente.calle2}, ${cliente.municipio}, ${cliente.estado}", style = MaterialTheme.typography.bodySmall)
+private fun ClienteCard(
+    cliente: ClienteEntity,
+    onClick: () -> Unit,
+    onEditar: () -> Unit = {},
+    onEliminar: () -> Unit = {}
+) {
+    var menuExpanded by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text = cliente.nombreCompleto,
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = "Tel: ${cliente.telefono}", style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Calle ${cliente.calle}, ${cliente.numeroCasa ?: ""}, entre calles ${cliente.calle1} y ${cliente.calle2}, ${cliente.municipio}, ${cliente.estado}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+// Botón de opciones en la esquina superior derecha
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+            ) {
+                IconButton(onClick = { menuExpanded = true }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Opciones"
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false },
+                    offset = DpOffset(x = (-8).dp, y = 0.dp)
+                ) {
+                    DropdownMenuItem(
+                        text = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Editar",
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Editar")
+                            }
+                        },
+                        onClick = {
+                            menuExpanded = false
+                            onEditar()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Eliminar",
+                                    tint = Color.Red,
+                                    modifier = Modifier.size(18.dp)
+
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Eliminar")
+                            }
+                        },
+                        onClick = {
+                            menuExpanded = false
+                            onEliminar()
+                        }
+                    )
+                }
+            }
         }
     }
 }
