@@ -1,8 +1,11 @@
 package com.tallerbox.app.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -103,13 +106,51 @@ fun MainScreen(navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.Start
             ) {
-                Text("¿Qué quieres hacer hoy?", style = MaterialTheme.typography.titleMedium)
+                Text("Acciones Rápidas", style = MaterialTheme.typography.titleMedium)
 
-                Button(onClick = {
-                    navController.navigate("registro_orden")
-                }) {
-                    Text("Nueva Orden de Servicio")
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(onClick = {
+                        navController.navigate("registro_cliente")
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.AddCircle,
+                            contentDescription = "Nuevo Cliente",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Nuevo Cliente")
+                    }
+
+                    Button(onClick = {
+                        navController.navigate("registro_vehiculo")
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.AddCircle,
+                            contentDescription = "Nuevo Vehiculo",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Nuevo Vehiculo")
+                    }
+
+                    Button(onClick = {
+                        navController.navigate("registro_orden")
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.AddCircle,
+                            contentDescription = "Nueva orden",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Nueva Orden")
+                    }
                 }
+
             }
         }
     }
