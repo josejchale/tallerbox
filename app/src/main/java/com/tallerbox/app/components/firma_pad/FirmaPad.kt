@@ -7,10 +7,12 @@ import android.graphics.Path as AndroidPath
 import android.util.Base64
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -29,70 +31,95 @@ fun FirmaPad(
     modifier: Modifier = Modifier,
     onFirmaConfirmada: (String) -> Unit
 ) {
-    // Lista de puntos para dibujar en Compose Canvas (visual)
-    var puntos by remember { mutableStateOf(listOf<Offset>()) }
+    var trazos by remember { mutableStateOf(listOf<List<Offset>>()) }
+    var trazoActual by remember { mutableStateOf(listOf<Offset>()) }
 
-    // También mantenemos un android.graphics.Path para exportar a Bitmap posteriormente
     val androidPath = remember { AndroidPath() }
-
     val strokeWidthPx = with(LocalDensity.current) { 2.dp.toPx() }
 
-    Column(modifier = modifier.background(MaterialTheme.colorScheme.surface)) {
-        // Área visible donde el usuario firma
-        Canvas(
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color.White)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Firma del cliente", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
+                .width(320.dp)
+                .height(160.dp)
                 .background(Color.White)
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragStart = { offset ->
-                            puntos = puntos + offset
-                            androidPath.moveTo(offset.x, offset.y)
-                        },
-                        onDrag = { change, _ ->
-                            val pos = change.position
-                            puntos = puntos + pos
-                            androidPath.lineTo(pos.x, pos.y)
-                        }
-                    )
-                }
+                .border(2.dp, Color.Gray)
         ) {
-            // Pintar la línea visual en Compose Canvas usando Path de Compose
-            if (puntos.isNotEmpty()) {
-                val composePath = Path().apply {
-                    moveTo(puntos.first().x, puntos.first().y)
-                    puntos.forEach { lineTo(it.x, it.y) }
-                }
-                drawPath(
-                    path = composePath,
-                    color = Color.Black,
-                    style = Stroke(
-                        width = strokeWidthPx,
-                        cap = StrokeCap.Round,
-                        join = StrokeJoin.Round
-                    )
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectDragGestures(
+                            onDragStart = { offset ->
+                                trazoActual = listOf(offset)
+                                androidPath.moveTo(offset.x, offset.y)
+                            },
+                            onDragEnd = {
+                                trazos = trazos + listOf(trazoActual)
+                                trazoActual = emptyList()
+                            },
+                            onDrag = { change, _ ->
+                                val pos = change.position
+                                trazoActual = trazoActual + pos
+                                androidPath.lineTo(pos.x, pos.y)
+                            }
+                        )
+                    }
+            ) {
+                val guideY = size.height * 0.75f
+                drawLine(
+                    color = Color.DarkGray,
+                    start = Offset(0f, guideY),
+                    end = Offset(size.width, guideY),
+                    strokeWidth = 1f
                 )
+
+                (trazos + listOf(trazoActual)).forEach { trazo ->
+                    if (trazo.size > 1) {
+                        val path = Path().apply {
+                            moveTo(trazo.first().x, trazo.first().y)
+                            trazo.drop(1).forEach { lineTo(it.x, it.y) }
+                        }
+                        drawPath(
+                            path = path,
+                            color = Color.Black,
+                            style = Stroke(
+                                width = strokeWidthPx,
+                                cap = StrokeCap.Round,
+                                join = StrokeJoin.Round
+                            )
+                        )
+                    }
+                }
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             TextButton(onClick = {
-                // limpiar la vista y el path android
-                puntos = emptyList()
+                trazos = emptyList()
+                trazoActual = emptyList()
                 androidPath.reset()
             }) {
                 Text("Limpiar")
             }
 
             Button(onClick = {
-                // Exportar androidPath a bitmap usando android Canvas
-                val width = 800
-                val height = 200
-                val bitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888);                val canvas = AndroidCanvas(bitmap)
-                // fondo blanco
+                val width = 640
+                val height = 320
+                val bitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val canvas = AndroidCanvas(bitmap)
                 canvas.drawColor(android.graphics.Color.WHITE)
 
                 val paint = AndroidPaint().apply {
@@ -104,7 +131,6 @@ fun FirmaPad(
                     strokeCap = AndroidPaint.Cap.ROUND
                 }
 
-                // Si no hay trazos, androidPath será vacío; aún así no fallará
                 canvas.drawPath(androidPath, paint)
 
                 val outputStream = ByteArrayOutputStream()
@@ -117,3 +143,4 @@ fun FirmaPad(
         }
     }
 }
+
