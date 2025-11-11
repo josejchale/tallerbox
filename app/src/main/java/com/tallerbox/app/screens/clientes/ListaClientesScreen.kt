@@ -26,19 +26,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
+import kotlinx.coroutines.launch
 
 
 @Composable
-fun ListaClientesScreen(navController: NavController, vm: ClienteViewModel = viewModel(factory = ClienteViewModelFactory(LocalContext.current.applicationContext as Application))) {
+fun ListaClientesScreen(
+    navController: NavController,
+    vm: ClienteViewModel = viewModel(
+        factory = ClienteViewModelFactory(LocalContext.current.applicationContext as Application)
+    )
+) {
     val clientes = vm.clientes.collectAsState().value
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(top=60.dp)
-        .padding(horizontal=20.dp),
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 60.dp)
+            .padding(horizontal = 20.dp),
     ) {
-
         Text("Clientes registrados", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -53,29 +62,42 @@ fun ListaClientesScreen(navController: NavController, vm: ClienteViewModel = vie
                             navController.navigate("lista_vehiculo/${cliente.id}")
                         },
                         onEditar = {
-                        //navController.navigate("editar_cliente/${cliente.id}")
+                            // navController.navigate("editar_cliente/${cliente.id}")
                         },
                         onEliminar = {
-                        //vm.eliminarCliente(cliente)
+                            // Guarda el cliente antes de eliminar
+                            vm.eliminarCliente(cliente)
+                            scope.launch {
+                                val result = snackbarHostState.showSnackbar(
+                                    message = "Cliente eliminado",
+                                    actionLabel = "Deshacer",
+                                    duration = SnackbarDuration.Short
+                                )
+                                if (result == SnackbarResult.ActionPerformed) {
+                                    // Si el usuario presiona "Deshacer", lo vuelve a insertar
+                                    vm.insertarCliente(cliente)
+                                }
+                            }
                         }
                     )
-
                 }
             }
         }
+
         Button(
             onClick = {
                 navController.navigate("registro_cliente")
-
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top=10.dp)
+                .padding(top = 10.dp)
         ) {
             Text("Registrar nuevo cliente")
         }
+        SnackbarHost(hostState = snackbarHostState)
     }
 }
+
 
 @Composable
 private fun ClienteCard(
@@ -85,6 +107,7 @@ private fun ClienteCard(
     onEliminar: () -> Unit = {}
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
+    var mostrarDialogo by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
@@ -107,7 +130,7 @@ private fun ClienteCard(
                 )
             }
 
-// Botón de opciones en la esquina superior derecha
+            // Botón de opciones en la esquina superior derecha
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -150,7 +173,6 @@ private fun ClienteCard(
                                     contentDescription = "Eliminar",
                                     tint = Color.Red,
                                     modifier = Modifier.size(18.dp)
-
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text("Eliminar")
@@ -158,11 +180,35 @@ private fun ClienteCard(
                         },
                         onClick = {
                             menuExpanded = false
-                            onEliminar()
+                            mostrarDialogo = true
                         }
                     )
                 }
             }
         }
+    }
+
+    // Diálogo de confirmación
+    if (mostrarDialogo) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogo = false },
+            title = { Text("Eliminar cliente") },
+            text = {
+                Text("¿Seguro que deseas eliminar a ${cliente.nombreCompleto}? Se borrarán también sus vehículos y órdenes.")
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    mostrarDialogo = false
+                    onEliminar()
+                }) {
+                    Text("Eliminar", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarDialogo = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }

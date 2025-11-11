@@ -8,4 +8,6 @@ class ClienteRepository (private val dao: ClienteDao){
     suspend fun insertar(cliente: ClienteEntity) = dao.insertar(cliente)
 
     fun obtenerTodosFlow(): Flow<List<ClienteEntity>> = dao.obtenerTodosFlow()
+
+    suspend fun eliminar(cliente: ClienteEntity) = dao.eliminar(cliente)
 }

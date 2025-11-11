@@ -21,4 +21,11 @@ class ClienteViewModel(private val repo: ClienteRepository) : ViewModel() {
             onComplete?.invoke()
         }
     }
+
+    fun eliminarCliente(cliente: ClienteEntity, onComplete: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            repo.eliminar(cliente)
+            onComplete?.invoke()
+        }
+    }
 }
