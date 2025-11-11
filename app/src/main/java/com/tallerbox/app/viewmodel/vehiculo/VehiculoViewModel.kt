@@ -21,6 +21,13 @@ class VehiculoViewModel(private val repo: VehiculoRepository) : ViewModel() {
             onComplete?.invoke()
         }
     }
+
+    fun eliminarVehiculo(vehiculo: VehiculoEntity, onComplete: (() -> Unit)? = null){
+        viewModelScope.launch {
+            repo.eliminar(vehiculo)
+            onComplete?.invoke()
+        }
+    }
     fun obtenerVehiculosPorCliente(clienteId: Int): StateFlow<List<VehiculoEntity>> =
         repo.obtenerPorClienteFlow(clienteId)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

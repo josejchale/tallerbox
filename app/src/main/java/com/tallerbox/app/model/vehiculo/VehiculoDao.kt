@@ -3,6 +3,7 @@ package com.tallerbox.app.model.vehiculo
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Delete
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -15,5 +16,8 @@ interface  VehiculoDao{
 
     @Query("SELECT * FROM vehiculos WHERE clienteId = :clienteId")
     fun obtenerPorClienteFlow(clienteId: Int): Flow<List<VehiculoEntity>>
+
+    @Delete
+    suspend fun eliminar(vehiculo: VehiculoEntity)
 
 }
