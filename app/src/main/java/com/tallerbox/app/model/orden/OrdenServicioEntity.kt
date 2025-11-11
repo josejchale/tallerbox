@@ -56,11 +56,12 @@ data class CostosOrden(
             entity = VehiculoEntity::class,
             parentColumns = ["id"],
             childColumns = ["vehiculoId"],
-            onDelete = ForeignKey.SET_NULL
+            onDelete = ForeignKey.CASCADE
         )
     ],
     indices = [Index("clienteId"), Index("vehiculoId"), Index("numeroOrden", unique = true)]
 )
+
 @TypeConverters(OrdenTypeConverters::class)
 data class OrdenServicioEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
