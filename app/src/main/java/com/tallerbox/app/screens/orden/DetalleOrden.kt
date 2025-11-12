@@ -199,7 +199,7 @@ fun TicketOrdenDetalle(
                     expanded = estadoExpanded,
                     onDismissRequest = { estadoExpanded = false }
                 ) {
-                    listOf("PENDIENTE", "EN PROCESO", "COMPLETADA", "ENTREGADA").forEach { estado ->
+                    listOf("PENDIENTE", "EN PROCESO", "COMPLETADA", "ENTREGADA", "CANCELADO").forEach { estado ->
                         DropdownMenuItem(
                             text = { Text(estado) },
                             onClick = {
