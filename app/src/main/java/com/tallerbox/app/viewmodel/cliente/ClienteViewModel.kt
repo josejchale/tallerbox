@@ -21,6 +21,15 @@ class ClienteViewModel(private val repo: ClienteRepository) : ViewModel() {
             onComplete?.invoke()
         }
     }
+    // Obtener cliente por ID
+    suspend fun obtenerClientePorId(clienteId: Int): ClienteEntity? {
+        return repo.obtenerClientePorId(clienteId)
+    }
+
+    // Actualizar cliente
+    suspend fun actualizarCliente(cliente: ClienteEntity) {
+        repo.actualizarCliente(cliente)
+    }
 
     fun eliminarCliente(cliente: ClienteEntity, onComplete: (() -> Unit)? = null) {
         viewModelScope.launch {

@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.tallerbox.app.screens.MainScreen
+import com.tallerbox.app.screens.clientes.EditarClientesScreen
 import com.tallerbox.app.screens.clientes.ListaClientesScreen
 import com.tallerbox.app.screens.clientes.RegistroClienteScreen
 import com.tallerbox.app.screens.orden.RegistroOrdenScreen
@@ -28,6 +29,12 @@ fun AppNavigation(navController: NavHostController) {
         composable("lista_clientes") {
             ListaClientesScreen(navController)
         }
+
+        composable("editar_cliente/{idCliente}") { backStackEntry ->
+            val idCliente = backStackEntry.arguments?.getString("idCliente")?.toInt() ?: 0
+            EditarClientesScreen(navController, idCliente)
+        }
+
 
         // Registro de vehículo con clienteId (ruta con parámetro)
         composable("registro_vehiculo/{clienteId}") { backStackEntry ->

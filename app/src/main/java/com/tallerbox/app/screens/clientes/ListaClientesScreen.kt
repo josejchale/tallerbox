@@ -62,7 +62,7 @@ fun ListaClientesScreen(
                             navController.navigate("lista_vehiculo/${cliente.id}")
                         },
                         onEditar = {
-                            // navController.navigate("editar_cliente/${cliente.id}")
+                            navController.navigate("editar_cliente/${cliente.id}")
                         },
                         onEliminar = {
                             // Guarda el cliente antes de eliminar
