@@ -11,6 +11,7 @@ import com.tallerbox.app.screens.clientes.RegistroClienteScreen
 import com.tallerbox.app.screens.orden.RegistroOrdenScreen
 import com.tallerbox.app.screens.orden.ListaOrdenesScreen
 import com.tallerbox.app.screens.orden.DetalleOrdenScreen
+import com.tallerbox.app.screens.vehiculo.EditarVehiculoScreen
 import com.tallerbox.app.screens.vehiculo.ListaVehiculosScreen
 import com.tallerbox.app.screens.vehiculo.RegistroVehiculoScreen
 
@@ -46,6 +47,12 @@ fun AppNavigation(navController: NavHostController) {
         composable("registro_vehiculo") {
             RegistroVehiculoScreen(navController, clienteId = null)
         }
+
+        composable("editar_vehiculo/{idVehiculo}") { backStackEntry ->
+            val idVehiculo = backStackEntry.arguments?.getString("idVehiculo")?.toInt() ?: 0
+            EditarVehiculoScreen(navController, vehiculoId = idVehiculo)
+        }
+
 
         // Lista de vehiculos sin parametros
         composable("lista_vehiculo") {

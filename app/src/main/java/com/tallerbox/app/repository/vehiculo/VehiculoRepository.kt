@@ -13,5 +13,11 @@ class VehiculoRepository (private val dao: VehiculoDao){
         return dao.obtenerPorClienteFlow(clienteId)
     }
 
+    suspend fun obtenerVehiculoPorId(vehiculoId: Int): VehiculoEntity? = dao.obtenerVehiculoPorId(vehiculoId)
+
+    suspend fun actualizarVehiculo(vehiculo: VehiculoEntity) {
+        dao.actualizar(vehiculo)
+    }
+
     suspend fun eliminar (vehiculo: VehiculoEntity) = dao.eliminar(vehiculo)
 }

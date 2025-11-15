@@ -77,7 +77,7 @@ fun ListaVehiculosScreen(
                                     navController.navigate("lista_ordenes_vehiculo/${vehiculo.id}")
                                 },
                                 onEditar = {
-                                    // navController.navigate("editar_vehiculo/${vehiculo.id}")
+                                    navController.navigate("editar_vehiculo/${vehiculo.id}")
                                 },
                                 onEliminar = {
                                     vm.eliminarVehiculo(vehiculo)
