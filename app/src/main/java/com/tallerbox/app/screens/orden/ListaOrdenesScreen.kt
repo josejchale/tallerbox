@@ -21,7 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.tallerbox.app.db.AppDatabase
 import com.tallerbox.app.model.orden.OrdenServicioEntity
-import com.tallerbox.app.repository.OrdenRepository
+import com.tallerbox.app.repository.orden.OrdenRepository
 import com.tallerbox.app.viewmodel.orden.OrdenViewModel
 import com.tallerbox.app.viewmodel.orden.OrdenViewModelFactory
 import androidx.compose.ui.unit.DpOffset
@@ -137,7 +137,7 @@ fun ListaOrdenesScreen(
                                                     navController.navigate("detalle_orden/${orden.id}")
                                                 },
                                                 onEditar = {
-                                                    // navController.navigate("editar_orden/${orden.id}")
+                                                    navController.navigate("editar_orden/${orden.id}")
                                                 },
                                                 onEliminar = {
                                                     vm.eliminar(orden)

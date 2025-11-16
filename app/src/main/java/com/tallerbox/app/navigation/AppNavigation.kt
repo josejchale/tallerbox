@@ -5,24 +5,37 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.tallerbox.app.screens.MainScreen
+
+// Clientes
 import com.tallerbox.app.screens.clientes.EditarClientesScreen
 import com.tallerbox.app.screens.clientes.ListaClientesScreen
 import com.tallerbox.app.screens.clientes.RegistroClienteScreen
-import com.tallerbox.app.screens.orden.RegistroOrdenScreen
-import com.tallerbox.app.screens.orden.ListaOrdenesScreen
-import com.tallerbox.app.screens.orden.DetalleOrdenScreen
+
+// Vehículos
 import com.tallerbox.app.screens.vehiculo.EditarVehiculoScreen
 import com.tallerbox.app.screens.vehiculo.ListaVehiculosScreen
 import com.tallerbox.app.screens.vehiculo.RegistroVehiculoScreen
 
+// Órdenes
+import com.tallerbox.app.screens.orden.RegistroOrdenScreen
+import com.tallerbox.app.screens.orden.ListaOrdenesScreen
+import com.tallerbox.app.screens.orden.DetalleOrdenScreen
+import com.tallerbox.app.screens.orden.EditarOrdenScreen   // ← NUEVO COMPONENTE (AJUSTA EL IMPORT SI ES OTRO)
+
 @Composable
 fun AppNavigation(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "main") {
+
+        // -----------------------------------------------------------
+        // MAIN
+        // -----------------------------------------------------------
         composable("main") {
             MainScreen(navController)
         }
 
-        // Registro de cliente
+        // -----------------------------------------------------------
+        // CLIENTES
+        // -----------------------------------------------------------
         composable("registro_cliente") {
             RegistroClienteScreen(navController)
         }
@@ -36,16 +49,25 @@ fun AppNavigation(navController: NavHostController) {
             EditarClientesScreen(navController, idCliente)
         }
 
+        // -----------------------------------------------------------
+        // VEHÍCULOS
+        // -----------------------------------------------------------
+        composable("registro_vehiculo") {
+            RegistroVehiculoScreen(navController, clienteId = null)
+        }
 
-        // Registro de vehículo con clienteId (ruta con parámetro)
         composable("registro_vehiculo/{clienteId}") { backStackEntry ->
             val clienteId = backStackEntry.arguments?.getString("clienteId")?.toIntOrNull()
             RegistroVehiculoScreen(navController, clienteId)
         }
 
-        // Registro de vehículo sin parámetro
-        composable("registro_vehiculo") {
-            RegistroVehiculoScreen(navController, clienteId = null)
+        composable("lista_vehiculo") {
+            ListaVehiculosScreen(navController, clienteId = null)
+        }
+
+        composable("lista_vehiculo/{clienteId}") { backStackEntry ->
+            val clienteId = backStackEntry.arguments?.getString("clienteId")?.toIntOrNull()
+            ListaVehiculosScreen(navController, clienteId)
         }
 
         composable("editar_vehiculo/{idVehiculo}") { backStackEntry ->
@@ -53,54 +75,51 @@ fun AppNavigation(navController: NavHostController) {
             EditarVehiculoScreen(navController, vehiculoId = idVehiculo)
         }
 
+        // -----------------------------------------------------------
+        // ÓRDENES
+        // -----------------------------------------------------------
 
-        // Lista de vehiculos sin parametros
-        composable("lista_vehiculo") {
-            ListaVehiculosScreen(navController, clienteId = null)
-        }
-
-
-        // Lista de vehículos filtrada por clienteId
-        composable("lista_vehiculo/{clienteId}") { backStackEntry ->
-            val clienteId = backStackEntry.arguments?.getString("clienteId")?.toIntOrNull()
-            ListaVehiculosScreen(navController, clienteId)
-        }
-
-        // ----- Órdenes de servicio -----
-
-        // Registrar orden: con clienteId y vehiculoId
-        composable("registro_orden/{clienteId}/{vehiculoId}") { backStackEntry ->
-            val clienteId = backStackEntry.arguments?.getString("clienteId")?.toIntOrNull()
-            val vehiculoId = backStackEntry.arguments?.getString("vehiculoId")?.toIntOrNull()
-            RegistroOrdenScreen(navController, clienteId = clienteId, vehiculoId = vehiculoId)
-        }
-
-        // Registrar orden sin parámetros
+        // Registro de orden
         composable("registro_orden") {
             RegistroOrdenScreen(navController, clienteId = null, vehiculoId = null)
         }
 
-        // Lista de órdenes (todas)
+        composable("registro_orden/{clienteId}/{vehiculoId}") { backStackEntry ->
+            val clienteId = backStackEntry.arguments?.getString("clienteId")?.toIntOrNull()
+            val vehiculoId = backStackEntry.arguments?.getString("vehiculoId")?.toIntOrNull()
+            RegistroOrdenScreen(navController, clienteId, vehiculoId)
+        }
+
+        // Lista de órdenes
         composable("lista_ordenes") {
             ListaOrdenesScreen(navController)
         }
 
-// Lista de órdenes por cliente
         composable("lista_ordenes_cliente/{clienteId}") { backStackEntry ->
             val clienteId = backStackEntry.arguments?.getString("clienteId")?.toIntOrNull()
             ListaOrdenesScreen(navController, clienteId = clienteId)
         }
 
-        // Detalle de orden por id
+        composable("lista_ordenes_vehiculo/{vehiculoId}") { backStackEntry ->
+            val vehiculoId = backStackEntry.arguments?.getString("vehiculoId")?.toIntOrNull()
+            ListaOrdenesScreen(navController, vehiculoId = vehiculoId)
+        }
+
+        // Detalle de orden
         composable("detalle_orden/{ordenId}") { backStackEntry ->
             val ordenId = backStackEntry.arguments?.getString("ordenId")?.toIntOrNull()
             DetalleOrdenScreen(navController, ordenId = ordenId)
         }
 
-// Lista de órdenes por vehículo
-        composable("lista_ordenes_vehiculo/{vehiculoId}") { backStackEntry ->
-            val vehiculoId = backStackEntry.arguments?.getString("vehiculoId")?.toIntOrNull()
-            ListaOrdenesScreen(navController, vehiculoId = vehiculoId)
+        // -----------------------------------------------------------
+        // NUEVO COMPONENTE: EDITAR ORDEN
+        composable("editar_orden/{ordenId}") { backStackEntry ->
+            val ordenId = backStackEntry.arguments
+                ?.getString("ordenId")
+                ?.toInt()
+                ?: error("ordenId es obligatorio en la ruta")
+
+            EditarOrdenScreen(navController, ordenId)
         }
 
     }

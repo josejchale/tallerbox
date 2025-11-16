@@ -13,7 +13,7 @@ import androidx.core.content.FileProvider
 import androidx.navigation.NavHostController
 import com.tallerbox.app.db.AppDatabase
 import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
-import com.tallerbox.app.repository.OrdenRepository
+import com.tallerbox.app.repository.orden.OrdenRepository
 import com.tallerbox.app.utils.PdfGenerator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
