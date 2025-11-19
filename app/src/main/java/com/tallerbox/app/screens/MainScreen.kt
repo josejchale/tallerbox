@@ -39,7 +39,7 @@ fun MainScreen(navController: NavController) {
                 ) {
                     IconButton(
                         onClick = {
-                            navController.navigate("main")
+                            navController.navigate("usuario_perfil")
                             scope.launch { drawerState.close() }
                         },
                         modifier = Modifier

@@ -20,7 +20,8 @@ import com.tallerbox.app.screens.vehiculo.RegistroVehiculoScreen
 import com.tallerbox.app.screens.orden.RegistroOrdenScreen
 import com.tallerbox.app.screens.orden.ListaOrdenesScreen
 import com.tallerbox.app.screens.orden.DetalleOrdenScreen
-import com.tallerbox.app.screens.orden.EditarOrdenScreen   // ← NUEVO COMPONENTE (AJUSTA EL IMPORT SI ES OTRO)
+import com.tallerbox.app.screens.orden.EditarOrdenScreen
+import com.tallerbox.app.screens.usuario.UsuarioPerfil
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -31,6 +32,14 @@ fun AppNavigation(navController: NavHostController) {
         // -----------------------------------------------------------
         composable("main") {
             MainScreen(navController)
+        }
+
+        // -----------------------------------------------------------
+        // PERFIL DEL USUARIO
+        // -----------------------------------------------------------
+
+        composable("usuario_perfil"){
+            UsuarioPerfil(navController)
         }
 
         // -----------------------------------------------------------

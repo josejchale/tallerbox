@@ -319,6 +319,7 @@ fun EditarOrdenScreen(
 
 
         fun guardarOrden() {
+            val original = ordenExistente
             val orden = OrdenServicioEntity(
                 id = ordenId,
                 clienteId = selectedClienteId!!,
@@ -347,11 +348,10 @@ fun EditarOrdenScreen(
                     llaves = llaves,
                     observaciones = observacionesCond.ifBlank { null }
                 ),
-                costos = CostosOrden(costo.toDoubleOrNull() ?: 0.0),
-                firmaClienteBase64 = null,
-                aceptaEnvioPublicidad = false,
-                aceptaCedencia = false,
-                estadoOrden = "PENDIENTE"
+                firmaClienteBase64 = original?.firmaClienteBase64,
+                aceptaEnvioPublicidad = original?.aceptaEnvioPublicidad ?: false,
+                aceptaCedencia = original?.aceptaCedencia ?: false,
+                estadoOrden = original?.estadoOrden ?: "PENDIENTE"
             )
 
             CoroutineScope(Dispatchers.IO).launch {
