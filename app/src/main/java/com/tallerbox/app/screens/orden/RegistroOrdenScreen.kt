@@ -74,7 +74,7 @@ fun RegistroOrdenScreen(
 
     // costo
     var costo by remember { mutableStateOf("0.0") }
-
+    var recepcion by remember { mutableStateOf("") }
 
     var clientes by remember { mutableStateOf<List<ClienteEntity>>(emptyList()) }
     var vehiculos by remember { mutableStateOf<List<VehiculoEntity>>(emptyList()) }
@@ -277,6 +277,13 @@ fun RegistroOrdenScreen(
         // Costos
         Text("Costos", style = MaterialTheme.typography.titleMedium)
         OutlinedTextField(value = costo, onValueChange = { costo = it }, label = { Text("Costo") }, modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = recepcion,
+            onValueChange = { recepcion = it },
+            label = { Text("Recepcionado por:") },
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(Modifier.height(32.dp))
 

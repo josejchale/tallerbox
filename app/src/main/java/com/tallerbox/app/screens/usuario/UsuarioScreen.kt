@@ -138,7 +138,7 @@ fun UsuarioPerfil() {
         }
     }
 
-    // ----------- Dialog con FirmaPad (mantiene TODO como querías) -----------
+    // ----------- Dialog con FirmaPad -----------
     if (mostrarFirmaDialog) {
         AlertDialog(
             onDismissRequest = { mostrarFirmaDialog = false },

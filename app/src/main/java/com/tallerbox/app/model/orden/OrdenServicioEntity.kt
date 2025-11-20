@@ -93,5 +93,7 @@ data class OrdenServicioEntity(
     val aceptaCedencia: Boolean = false,
 
     // meta
-    val estadoOrden: String? = null // e.g., "PENDIENTE", "EN_PROCESO", "COMPLETADA"
+    val estadoOrden: String? = null, // e.g., "PENDIENTE", "EN_PROCESO", "COMPLETADA"
+    val recepcion: String? = null,
+    val entrega: String? = null
 )

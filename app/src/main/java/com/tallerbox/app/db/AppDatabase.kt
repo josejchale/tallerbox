@@ -23,7 +23,7 @@ import com.tallerbox.app.model.usuario.UsuarioDao
         OrdenServicioEntity::class,
         UsuarioEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = true
 )
 @TypeConverters(OrdenTypeConverters::class)
@@ -32,7 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun clienteDao(): ClienteDao
     abstract fun vehiculoDao(): VehiculoDao
     abstract fun ordenServicioDao(): OrdenServicioDao
-    abstract fun usuarioDao(): UsuarioDao // ← AGREGAR
+    abstract fun usuarioDao(): UsuarioDao
 
     companion object {
         @Volatile private var INSTANCE: AppDatabase? = null
