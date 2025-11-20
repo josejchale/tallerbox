@@ -12,18 +12,27 @@ import com.tallerbox.app.model.vehiculo.VehiculoEntity
 import com.tallerbox.app.model.vehiculo.VehiculoDao
 import com.tallerbox.app.model.orden.OrdenServicioEntity
 import com.tallerbox.app.model.orden.OrdenServicioDao
+import com.tallerbox.app.model.usuario.UsuarioEntity
 import com.tallerbox.app.model.orden.OrdenTypeConverters
+import com.tallerbox.app.model.usuario.UsuarioDao
 
 @Database(
-    entities = [ClienteEntity::class, VehiculoEntity::class, OrdenServicioEntity::class],
-    version = 7,
+    entities = [
+        ClienteEntity::class,
+        VehiculoEntity::class,
+        OrdenServicioEntity::class,
+        UsuarioEntity::class
+    ],
+    version = 9,
     exportSchema = true
 )
 @TypeConverters(OrdenTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
+
     abstract fun clienteDao(): ClienteDao
     abstract fun vehiculoDao(): VehiculoDao
     abstract fun ordenServicioDao(): OrdenServicioDao
+    abstract fun usuarioDao(): UsuarioDao // ← AGREGAR
 
     companion object {
         @Volatile private var INSTANCE: AppDatabase? = null
@@ -35,11 +44,13 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "tallerbox_db"
                 )
-                    .addMigrations(MIGRATION_6_7)
+                    .fallbackToDestructiveMigration()
                     .build()
+
                 INSTANCE = instance
                 instance
             }
         }
     }
 }
+

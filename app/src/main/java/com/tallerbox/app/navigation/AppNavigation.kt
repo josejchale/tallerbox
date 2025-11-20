@@ -39,7 +39,7 @@ fun AppNavigation(navController: NavHostController) {
         // -----------------------------------------------------------
 
         composable("usuario_perfil"){
-            UsuarioPerfil(navController)
+            UsuarioPerfil()
         }
 
         // -----------------------------------------------------------
