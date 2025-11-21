@@ -36,6 +36,9 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
     // 🔹 Estado local para manejar la carga de datos
     var detalleResult by remember { mutableStateOf<Result<OrdenConClienteYVehiculo?>?>(null) }
     val scope = rememberCoroutineScope()
+    var mostrarDialogoEntrega by remember { mutableStateOf(false) }
+    var nombreEntrega by remember { mutableStateOf("") }
+
 
     // 🔹 Cargar detalle al iniciar
     LaunchedEffect(ordenId) {
@@ -168,7 +171,51 @@ fun TicketOrdenDetalle(
 
     var estadoOrden by remember { mutableStateOf(data.orden.estadoOrden ?: "PENDIENTE") }
     var estadoExpanded by remember { mutableStateOf(false) }
-    val esCompletada = estadoOrden == "COMPLETADA"
+
+    // 🔹 Dialogo de ENTREGADA
+    var mostrarDialogoEntrega by remember { mutableStateOf(false) }
+    var nombreEntrega by remember { mutableStateOf("") }
+
+    // 🔹 Cuando el usuario confirma quién entrega
+    if (mostrarDialogoEntrega) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoEntrega = false },
+            title = { Text("¿Quién entrega?") },
+            text = {
+                OutlinedTextField(
+                    value = nombreEntrega,
+                    onValueChange = { nombreEntrega = it },
+                    label = { Text("Nombre de quien entrega") }
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        mostrarDialogoEntrega = false
+
+                        scope.launch(Dispatchers.IO) {
+                            ordenDao.actualizarEstadoYEntrega(
+                                ordenId,
+                                "ENTREGADA",
+                                Date(),
+                                nombreEntrega
+                            )
+
+                            launch(Dispatchers.Main) {
+                                Toast.makeText(context, "Orden entregada", Toast.LENGTH_SHORT).show()
+                                onEstadoActualizado()
+                            }
+                        }
+                    }
+                ) { Text("Guardar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarDialogoEntrega = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -206,41 +253,31 @@ fun TicketOrdenDetalle(
                                 estadoOrden = estado
                                 estadoExpanded = false
 
-                                // Si se selecciona "COMPLETADA", guardar automáticamente
                                 if (estado == "ENTREGADA") {
-                                    val fechaEntregaReal = Date()
-                                    scope.launch(Dispatchers.IO) {
-                                        ordenDao.actualizarEstadoYEntrega(ordenId, estado, fechaEntregaReal)
-                                        launch(Dispatchers.Main) {
-                                            Toast.makeText(context, "Orden marcada como ENTREGADA", Toast.LENGTH_SHORT).show()
-                                            onEstadoActualizado()
-                                        }
+                                    // Mostrar diálogo preguntando "¿Quién entrega?"
+                                    mostrarDialogoEntrega = true
+                                    return@DropdownMenuItem
+                                }
+
+                                // Otros estados normales
+                                scope.launch(Dispatchers.IO) {
+                                    ordenDao.actualizarEstadoYEntrega(
+                                        ordenId,
+                                        estado,
+                                        null,
+                                        "N/A"
+                                    )
+
+                                    launch(Dispatchers.Main) {
+                                        Toast.makeText(context, "Estado actualizado: $estado", Toast.LENGTH_SHORT).show()
+                                        onEstadoActualizado()
                                     }
                                 }
                             }
                         )
-
                     }
                 }
             }
-
-            if (estadoOrden != "ENTREGADA") {
-                Button(
-                    onClick = {
-                        scope.launch(Dispatchers.IO) {
-                            ordenDao.actualizarEstadoYEntrega(ordenId, estadoOrden, null)
-                            launch(Dispatchers.Main) {
-                                Toast.makeText(context, "Estado actualizado", Toast.LENGTH_SHORT).show()
-                                onEstadoActualizado()
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Guardar estado")
-                }
-            }
-
 
             HorizontalDivider()
 
@@ -287,18 +324,12 @@ fun TicketOrdenDetalle(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
+                Column(modifier = Modifier.weight(1f)) {
                     columnaIzq.forEach { (nombre, estado) ->
                         Text("$nombre: ${estado.name}", style = MaterialTheme.typography.bodySmall)
                     }
                 }
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
+                Column(modifier = Modifier.weight(1f)) {
                     columnaDer.forEach { (nombre, estado) ->
                         Text("$nombre: ${estado.name}", style = MaterialTheme.typography.bodySmall)
                     }
@@ -307,18 +338,16 @@ fun TicketOrdenDetalle(
 
             if (!condiciones.observaciones.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    "Observaciones: ${condiciones.observaciones}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Text("Observaciones: ${condiciones.observaciones}", style = MaterialTheme.typography.bodyMedium)
             }
 
             HorizontalDivider()
 
-            Text(
-                "Costo total: $${data.orden.costos.costo}",
-                style = MaterialTheme.typography.titleMedium
-            )
+            Text("Costo total: $${data.orden.costos.costo}", style = MaterialTheme.typography.titleMedium)
+            HorizontalDivider()
+            Text("El vehiculo fue recepcionado por: ${data.orden.recepcion}",style = MaterialTheme.typography.bodyMedium)
+            Text("El vehiculo fue entregado por: ${data.orden.entrega}",style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
+

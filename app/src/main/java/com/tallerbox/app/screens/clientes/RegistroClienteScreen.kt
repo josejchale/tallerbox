@@ -77,6 +77,7 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
             Text("Este campo no puede estar vacío", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         }
 
+        Text("Dirección", style = MaterialTheme.typography.labelMedium)
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(
@@ -101,7 +102,7 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
             Text("Este campo no puede estar vacío", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         }
 
-
+        Text("Cruzamientos", style = MaterialTheme.typography.labelMedium)
         Row(modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(
@@ -193,6 +194,7 @@ fun RegistroClienteScreen(navController: NavController, vm: ClienteViewModel = v
             Text("Este campo no puede estar vacío", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         }
 
+        Text("Télefono", style = MaterialTheme.typography.labelMedium)
         OutlinedTextField(
             value = telefono,
             onValueChange = {

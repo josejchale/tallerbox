@@ -40,13 +40,16 @@ interface OrdenServicioDao {
     // ACTUALIZACIONES ESPECÍFICAS
 
     @Query("""
-        UPDATE orden_servicio 
-        SET estadoOrden = :estado, fechaEntregaReal = :fechaEntregaReal 
-        WHERE id = :ordenId
+        UPDATE orden_servicio
+    SET estadoOrden = :estado,
+        fechaEntregaReal = :fechaEntregaReal,
+        entrega = :entrega
+    WHERE id = :ordenId
     """)
     suspend fun actualizarEstadoYEntrega(
         ordenId: Int,
         estado: String,
-        fechaEntregaReal: Date?
+        fechaEntregaReal: Date?,
+        entrega: String
     )
 }

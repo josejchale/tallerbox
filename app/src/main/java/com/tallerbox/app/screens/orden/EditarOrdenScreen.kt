@@ -351,7 +351,9 @@ fun EditarOrdenScreen(
                 firmaClienteBase64 = original?.firmaClienteBase64,
                 aceptaEnvioPublicidad = original?.aceptaEnvioPublicidad ?: false,
                 aceptaCedencia = original?.aceptaCedencia ?: false,
-                estadoOrden = original?.estadoOrden ?: "PENDIENTE"
+                estadoOrden = original?.estadoOrden ?: "PENDIENTE",
+                recepcion = original?.recepcion ?: "",
+                entrega = original?.entrega ?: ""
             )
 
             CoroutineScope(Dispatchers.IO).launch {

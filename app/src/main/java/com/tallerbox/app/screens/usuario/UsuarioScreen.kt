@@ -15,8 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tallerbox.app.components.firma_pad.FirmaPad
 import com.tallerbox.app.db.AppDatabase
-import com.tallerbox.app.model.usuario.UsuarioViewModel
-import com.tallerbox.app.model.usuario.UsuarioViewModelFactory
+import com.tallerbox.app.viewmodel.usuario.UsuarioViewModel
+import com.tallerbox.app.viewmodel.usuario.UsuarioViewModelFactory
 import com.tallerbox.app.repository.usuario.UsuarioRepository
 
 @Composable

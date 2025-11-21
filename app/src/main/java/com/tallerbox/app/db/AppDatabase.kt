@@ -23,7 +23,7 @@ import com.tallerbox.app.model.usuario.UsuarioDao
         OrdenServicioEntity::class,
         UsuarioEntity::class
     ],
-    version = 10,
+    version = 12,
     exportSchema = true
 )
 @TypeConverters(OrdenTypeConverters::class)

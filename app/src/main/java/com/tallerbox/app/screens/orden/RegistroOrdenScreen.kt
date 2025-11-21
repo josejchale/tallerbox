@@ -281,7 +281,7 @@ fun RegistroOrdenScreen(
         OutlinedTextField(
             value = recepcion,
             onValueChange = { recepcion = it },
-            label = { Text("Recepcionado por:") },
+            label = { Text("Vehiculo recepcionado por") },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -337,7 +337,9 @@ fun RegistroOrdenScreen(
                 firmaClienteBase64 = firmaBase64,
                 aceptaEnvioPublicidad = aceptaPublicidad,
                 aceptaCedencia = aceptaCedencia,
-                estadoOrden = "PENDIENTE"
+                estadoOrden = "PENDIENTE",
+                recepcion = recepcion,
+                entrega = ""
             )
 
             CoroutineScope(Dispatchers.IO).launch {

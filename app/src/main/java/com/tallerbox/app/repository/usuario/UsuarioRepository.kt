@@ -19,4 +19,7 @@ class UsuarioRepository(private val dao: UsuarioDao) {
     suspend fun actualizar(usuario: UsuarioEntity) {
         dao.update(usuario)
     }
+
+    fun getFirma() = dao.getFirma()
+
 }

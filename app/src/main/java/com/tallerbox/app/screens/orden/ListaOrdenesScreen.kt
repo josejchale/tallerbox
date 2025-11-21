@@ -213,6 +213,8 @@ private fun OrdenCard(
                 Text(text = "Fecha: ${orden.fechaIngreso}", style = MaterialTheme.typography.bodySmall)
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(text = orden.descripcionFalla ?: "", style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(text = "Recibió: ${orden.recepcion} - Entregó: ${orden.entrega}", style = MaterialTheme.typography.bodyMedium)
             }
 
             Box(

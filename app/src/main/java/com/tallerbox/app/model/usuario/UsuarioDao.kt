@@ -17,4 +17,8 @@ interface UsuarioDao {
 
     @Update
     suspend fun update(usuario: UsuarioEntity)
+
+    @Query("SELECT firmaBase64 FROM usuario WHERE id = 1")
+    fun getFirma(): Flow<String?>
+
 }

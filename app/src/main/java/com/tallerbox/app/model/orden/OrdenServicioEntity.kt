@@ -94,6 +94,6 @@ data class OrdenServicioEntity(
 
     // meta
     val estadoOrden: String? = null, // e.g., "PENDIENTE", "EN_PROCESO", "COMPLETADA"
-    val recepcion: String? = null,
-    val entrega: String? = null
+    val recepcion: String,
+    val entrega: String
 )

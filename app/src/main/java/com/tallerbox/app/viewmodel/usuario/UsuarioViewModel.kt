@@ -1,8 +1,9 @@
-package com.tallerbox.app.model.usuario
+package com.tallerbox.app.viewmodel.usuario
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.tallerbox.app.model.usuario.UsuarioEntity
 import com.tallerbox.app.repository.usuario.UsuarioRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
