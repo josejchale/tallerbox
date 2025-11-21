@@ -2,6 +2,7 @@ package com.tallerbox.app.screens.usuario
 
 import android.graphics.BitmapFactory
 import android.util.Base64
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -147,7 +148,18 @@ fun UsuarioPerfil() {
                 FirmaPad(onFirmaConfirmada = { nuevaFirma ->
                     firmaBase64 = nuevaFirma
                     mostrarFirmaDialog = false
+
+                    if (usuario == null) {
+                        vm.crear(nombre, nuevaFirma)
+                        Log.d("UsuarioPerfil", "Firma guardada: $nuevaFirma")
+
+                    } else {
+                        vm.actualizar(usuario!!.copy(firmaBase64 = nuevaFirma))
+                        Log.d("UsuarioPerfil", "Firma guardada: $nuevaFirma")
+
+                    }
                 })
+
             }
         )
     }

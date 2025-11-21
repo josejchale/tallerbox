@@ -21,6 +21,14 @@ class UsuarioViewModel(
             null
         )
 
+    // 👇 Firma en Base64
+    val firma: StateFlow<String?> =
+        repo.getFirma().stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            null
+        )
+
     fun crear(nombre: String, firma: String?) {
         viewModelScope.launch {
             repo.crear(nombre, firma)

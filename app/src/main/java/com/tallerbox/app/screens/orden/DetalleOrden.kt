@@ -1,5 +1,7 @@
 package com.tallerbox.app.screens.orden
 
+import android.annotation.SuppressLint
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,17 +12,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.tallerbox.app.db.AppDatabase
 import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import com.tallerbox.app.repository.orden.OrdenRepository
+import com.tallerbox.app.repository.usuario.UsuarioRepository
 import com.tallerbox.app.utils.PdfGenerator
+import com.tallerbox.app.viewmodel.usuario.UsuarioViewModel
+import com.tallerbox.app.viewmodel.usuario.UsuarioViewModelFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
     val context = LocalContext.current
@@ -32,6 +39,10 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
 
     val db = AppDatabase.getDatabase(context)
     val repo = OrdenRepository(db.ordenServicioDao())
+    val usuarioRepo = UsuarioRepository(db.usuarioDao())
+    val usuarioViewModel: UsuarioViewModel = viewModel(factory = UsuarioViewModelFactory(usuarioRepo))
+    val firmaBase64 by usuarioViewModel.firma.collectAsState()
+
 
     // 🔹 Estado local para manejar la carga de datos
     var detalleResult by remember { mutableStateOf<Result<OrdenConClienteYVehiculo?>?>(null) }
@@ -118,12 +129,12 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
                             Toast.makeText(contextForPdf, "Orden no cargada", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
-
+                        Log.d("DetalleOrden", "Firma recuperada: ${usuarioViewModel.firma.value}")
                         scopeForPdf.launch(Dispatchers.IO) {
                             try {
                                 val filename = "orden_${data.orden.numeroOrden}.pdf"
                                 val outFile = File(contextForPdf.cacheDir, filename)
-                                PdfGenerator.generateOrdenPdf(contextForPdf, data, outFile)
+                                PdfGenerator.generateOrdenPdf(contextForPdf, data, outFile, firmaBase64)
 
                                 val authority = "${contextForPdf.packageName}.fileprovider"
                                 val uri = FileProvider.getUriForFile(contextForPdf, authority, outFile)
@@ -146,6 +157,7 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
                 ) {
                     Text("Enviar PDF")
                 }
+
             }
         }
     }

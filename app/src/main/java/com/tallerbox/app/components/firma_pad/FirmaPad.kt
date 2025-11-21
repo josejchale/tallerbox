@@ -49,7 +49,7 @@ fun FirmaPad(
 
         Box(
             modifier = Modifier
-                .width(320.dp)
+                .fillMaxWidth()
                 .height(160.dp)
                 .background(Color.White)
                 .border(2.dp, Color.Gray)
@@ -75,7 +75,7 @@ fun FirmaPad(
                         )
                     }
             ) {
-                val guideY = size.height * 0.75f
+                val guideY = size.height * 0.8f
                 drawLine(
                     color = Color.DarkGray,
                     start = Offset(0f, guideY),

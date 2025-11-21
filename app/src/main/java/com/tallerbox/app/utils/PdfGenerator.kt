@@ -1,5 +1,6 @@
 package com.tallerbox.app.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.*
@@ -49,8 +50,14 @@ object PdfGenerator {
     }
 
 
+    @SuppressLint("UseKtx")
     @Throws(Exception::class)
-    fun generateOrdenPdf(context: Context, data: OrdenConClienteYVehiculo, outFile: File): File {
+    fun generateOrdenPdf(
+        context: Context,
+        data: OrdenConClienteYVehiculo,
+        outFile: File,
+        firmaBase64: String? = null
+    ): File {
         val pageWidth = PAGE_WIDTH
         val pageHeight = PAGE_HEIGHT
         val margin = 36f
@@ -338,7 +345,7 @@ object PdfGenerator {
         drawMultilineText(canvas, celular, clientValueX, leftRow3 + 10f, clientValueMaxWidth, paintBody)
 
 // === Datos de la orden ===
-        val numeroOrden = orden.numeroOrden ?: "—"
+        val numeroOrden = orden.numeroOrden
         val fechaIngreso = try { dateFormatter.format(orden.fechaIngreso) } catch (_: Exception) { "—" }
         val fechaEntrega = orden.fechaEntregaEstimado?.let { dateFormatter.format(it) } ?: "—"
 
@@ -641,7 +648,7 @@ object PdfGenerator {
         y += 12f
 
 // 2. Costo de revisión, firma del prestador y fecha (alineación vertical + fecha en español)
-        val costo = orden.costos?.costo ?: 0.0
+        val costo = orden.costos.costo
         val costoStr = String.format(Locale("es", "MX"), "%.2f", costo)
         val lineSpacing = 12f
 
@@ -658,10 +665,21 @@ object PdfGenerator {
         val firmaTextWidth = paintBody.measureText(firmaText)
         val lineStartX = margin + firmaTextWidth + 16f
         val lineEndX = lineStartX + 180f
-        val lineY = firmaY // usa misma altura que texto para asegurar alineación
+        val lineY = firmaY
         canvas.drawLine(lineStartX, lineY, lineEndX, lineY, paintLine)
 
         y += lineSpacing
+
+// 👇 Dibujar firma si existe
+        if (!firmaBase64.isNullOrBlank()) {
+            val decodedBytes = Base64.decode(firmaBase64, Base64.DEFAULT)
+            val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+            val cleanBitmap = removeWhiteBackground(bitmap)
+            val scaledBitmap = Bitmap.createScaledBitmap(cleanBitmap, 180, 80, true)
+
+            // Dibuja la firma justo encima de la línea
+            canvas.drawBitmap(scaledBitmap, lineStartX, firmaY - scaledBitmap.height + 8f, null)
+        }
 
 // Fecha en formato largo español
         val fechaActual = Date()
@@ -677,7 +695,7 @@ object PdfGenerator {
         y += 12f
 
 // 4. Cláusula de publicidad con marca dinámica
-        val aceptaPublicidad = orden.aceptaEnvioPublicidad == true
+        val aceptaPublicidad = orden.aceptaEnvioPublicidad
         val publicidad = if (aceptaPublicidad) {
             "( X ) Acepta (   ) No acepta que el prestador de servicios envíe publicidad sobre bienes y servicios."
         } else {
