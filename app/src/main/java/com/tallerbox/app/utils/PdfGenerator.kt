@@ -29,26 +29,123 @@ object PdfGenerator {
     private const val PAGE_HEIGHT = 792
     private val localeMx = Locale.Builder().setLanguage("es").setRegion("MX").build()
     private val dateFormatter = SimpleDateFormat("dd/MM/yyyy", localeMx)
-    private fun removeWhiteBackground(bitmap: Bitmap): Bitmap {
-        val result = createBitmap(bitmap.width, bitmap.height)
-        for (x in 0 until bitmap.width) {
-            for (y in 0 until bitmap.height) {
-                val pixel = bitmap[x, y]
-                val red = Color.red(pixel)
-                val green = Color.green(pixel)
-                val blue = Color.blue(pixel)
 
-                // Si el pixel es casi blanco, lo hacemos transparente
-                if (red > 240 && green > 240 && blue > 240) {
-                    result[x, y] = Color.TRANSPARENT
-                } else {
-                    result[x, y] = pixel
-                }
+    private fun resizeSignatureBase64(base64: String, maxWidth: Int = 800): Bitmap? {
+        return try {
+            // Decodificar Base64
+            val decodedBytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
+            val original = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size) ?: return null
+
+            // Si ya es pequeña, no hacemos nada
+            if (original.width <= maxWidth) {
+                return original.copy(Bitmap.Config.ARGB_8888, true)
+            }
+
+            // Escalado manteniendo proporción
+            val scale = maxWidth.toFloat() / original.width
+            val newHeight = (original.height * scale).toInt()
+
+            Bitmap.createScaledBitmap(original, maxWidth, newHeight, true)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun removeWhiteBackground(bitmap: Bitmap): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+
+        // Copia ARGB para permitir transparencia
+        val result = bitmap.copy(Bitmap.Config.ARGB_8888, true)
+
+        // Arreglo donde cargamos todos los píxeles de una sola vez
+        val pixels = IntArray(width * height)
+        result.getPixels(pixels, 0, width, 0, 0, width, height)
+
+        // Umbral para detectar blanco (tunable)
+        val threshold = 240
+
+        for (i in pixels.indices) {
+            val color = pixels[i]
+
+            val r = Color.red(color)
+            val g = Color.green(color)
+            val b = Color.blue(color)
+
+            // Si es casi blanco → transparente
+            if (r > threshold && g > threshold && b > threshold) {
+                pixels[i] = Color.TRANSPARENT
             }
         }
+
+        // Escribimos todos los píxeles optimizados de vuelta de un solo golpe
+        result.setPixels(pixels, 0, width, 0, 0, width, height)
+
         return result
     }
 
+    private fun preprocessSignature(base64: String): Bitmap? {
+        val resized = resizeSignatureBase64(base64) ?: return null
+        return removeWhiteBackground(resized)
+    }
+
+
+
+    private fun drawRichMultilineText(
+        canvas: Canvas,
+        text: String,
+        startX: Float,
+        startY: Float,
+        maxWidth: Float,
+        normalPaint: Paint,
+        boldPaint: Paint
+    ): Float {
+        var y = startY
+        val lines = text.split("\n")
+
+        for (line in lines) {
+
+            // Si la línea está vacía, saltar renglón
+            if (line.isBlank()) {
+                y += normalPaint.textSize * 1.5f
+                continue
+            }
+
+            // Dividir en segmentos normales y en negritas **texto**
+            val parts = Regex("(\\*\\*.*?\\*\\*)|([^*]+)").findAll(line)
+
+            var x = startX
+
+            for (p in parts) {
+                val segment = p.value
+
+                // Detectar negritas
+                val isBold = segment.startsWith("**") && segment.endsWith("**")
+                val cleanText = if (isBold) segment.substring(2, segment.length - 2) else segment
+
+                val paint = if (isBold) boldPaint else normalPaint
+
+                val words = cleanText.split(" ")
+                for (word in words) {
+                    val wordText = "$word "
+                    val wordWidth = paint.measureText(wordText)
+
+                    // Si no cabe → salto de línea
+                    if (x + wordWidth > startX + maxWidth) {
+                        x = startX
+                        y += normalPaint.textSize * 1.5f
+                    }
+
+                    canvas.drawText(wordText, x, y, paint)
+                    x += wordWidth
+                }
+            }
+
+            y += normalPaint.textSize * 1.5f
+        }
+
+        return y
+    }
 
     @SuppressLint("UseKtx")
     @Throws(Exception::class)
@@ -103,12 +200,20 @@ object PdfGenerator {
             color = Color.DKGRAY
             isAntiAlias = true
         }
-        // CAMBIO: Fuente 8pt (Regular) para todo el cuerpo de texto, datos y legales
+        // CAMBIO: Fuente 8pt (Regular) para
         val paintBody = Paint().apply {
-            textSize = 8f
             color = Color.BLACK
+            textSize = 10f
             isAntiAlias = true
         }
+
+        val paintBoldBody = Paint().apply {
+            color = Color.BLACK
+            textSize = 10f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            isAntiAlias = true
+        }
+
         // Sin cambios
         val paintLine = Paint().apply {
             color = Color.BLACK
@@ -670,15 +775,21 @@ object PdfGenerator {
 
         y += lineSpacing
 
-// 👇 Dibujar firma si existe
+// === Firma optimizada (preprocesada) ===
         if (!firmaBase64.isNullOrBlank()) {
-            val decodedBytes = Base64.decode(firmaBase64, Base64.DEFAULT)
-            val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-            val cleanBitmap = removeWhiteBackground(bitmap)
-            val scaledBitmap = Bitmap.createScaledBitmap(cleanBitmap, 180, 80, true)
+            preprocessSignature(firmaBase64)?.let { sigBitmap ->
 
-            // Dibuja la firma justo encima de la línea
-            canvas.drawBitmap(scaledBitmap, lineStartX, firmaY - scaledBitmap.height + 8f, null)
+                // Escalar para que encaje EXACTO en la línea
+                val scaledBitmap = Bitmap.createScaledBitmap(sigBitmap, 180, 80, true)
+
+                // Dibujar justo encima de la línea
+                canvas.drawBitmap(
+                    scaledBitmap,
+                    lineStartX,
+                    firmaY - scaledBitmap.height + 8f, // Ajuste para que quede justo arriba
+                    null
+                )
+            }
         }
 
 // Fecha en formato largo español
@@ -686,6 +797,7 @@ object PdfGenerator {
         val fechaFormateada = SimpleDateFormat("d 'de' MMMM 'de' yyyy", Locale("es", "MX")).format(fechaActual)
         canvas.drawText("Fecha: $fechaFormateada", margin, y, paintBody)
         y += lineSpacing
+        y += 12f
 
 
 
@@ -704,32 +816,35 @@ object PdfGenerator {
         y = drawMultilineText(canvas, publicidad, margin, y, pageWidth - margin * 2, paintBody)
         y += 20f
 
-// 5. Firma del consumidor
-        val consumerLineLength = 220f
-        canvas.drawLine(margin, y, margin + consumerLineLength, y, paintLine)
-        canvas.drawText("Firma de autorización del consumidor:", margin, y + 10f, paintBody)
+// === Firma del consumidor (alineada como la del prestador) ===
 
-// Firma digital (si existe)
+// Texto: "Firma de autorización del consumidor:"
+        val signatureText = "Firma de autorización del consumidor:"
+        val sigY = y
+        canvas.drawText(signatureText, margin, sigY, paintBody)
+
+// Línea alineada a la derecha del texto
+        val sigTextWidth = paintBody.measureText(signatureText)
+        val consumerLineStartX = margin + sigTextWidth + 16f
+        val consumerLineEndX = consumerLineStartX + 180f
+        canvas.drawLine(consumerLineStartX, sigY, consumerLineEndX, sigY, paintLine)
+
+        y += lineSpacing
+
+// Firma digital del consumidor
         orden.firmaClienteBase64?.takeIf { it.isNotBlank() }?.let { b64 ->
-            try {
-                val rawBitmap = base64ToBitmap(b64)
-                val sigBitmap = removeWhiteBackground(rawBitmap)
-                val maxW = 180f
-                val scale = min(maxW / sigBitmap.width, 1f)
-                val sigW = (sigBitmap.width * scale).toInt()
-                val sigH = (sigBitmap.height * scale).toInt()
-                val sigDrawX = margin + (consumerLineLength / 2f) - (sigW / 2f)
+            preprocessSignature(b64)?.let { sigBitmap ->
 
-                val overlap = 8f
-                val dest = Rect(
-                    sigDrawX.toInt(),
-                    (y - sigH + overlap).toInt(),
-                    (sigDrawX + sigW).toInt(),
-                    (y + overlap).toInt()
+                // Ajustar tamaño para encajar en la línea
+                val scaled = Bitmap.createScaledBitmap(sigBitmap, 180, 80, true)
+
+                // Dibujo alineado justo encima de la línea (igual que la primera firma)
+                canvas.drawBitmap(
+                    scaled,
+                    consumerLineStartX,
+                    sigY - scaled.height + 8f,
+                    null
                 )
-                canvas.drawBitmap(sigBitmap, null, dest, null)
-            } catch (e: Exception) {
-                w("PdfGenerator", "Error drawing signature", e)
             }
         }
 
@@ -743,8 +858,64 @@ object PdfGenerator {
         y = drawMultilineText(canvas, note, margin, y, pageWidth - margin * 2, boldPaintBody)
 
 
-        // Finish page and write
+        // Fin de la primera pagnia
         doc.finishPage(page)
+// ======== NUEVA PÁGINA PARA REGLAMENTO ========
+        val pageInfo2 = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 2).create()
+        val page2 = doc.startPage(pageInfo2)
+        val canvas2 = page2.canvas
+
+        var y2 = margin
+
+        val titleReglamento = "REGLAMENTO DEL TALLER MECÁNICO DE MOTOS"
+        val titleX2 = (pageWidth / 2f) - (paintSectionTitle.measureText(titleReglamento) / 2f)
+        canvas2.drawText(titleReglamento, titleX2, y2, paintSectionTitle)
+        y2 += 20f
+
+        val subtitle = "~BOX HALACHÓ~"
+        val subX2 = (pageWidth / 2f) - (paintHeaderTitle.measureText(subtitle) / 2f)
+        canvas2.drawText(subtitle, subX2, y2, paintHeaderTitle)
+        y2 += 30f
+
+        val reglamento = """
+Para garantizar un servicio eficiente y organizado, así como para evitar inconvenientes tanto para los clientes como para el taller, solicitamos que todos los clientes respeten las siguientes reglas al dejar sus motocicletas para reparación:
+
+**1. RECEPCIÓN DE LA MOTO Y ORDEN DE SERVICIO.**
+Toda moto que sea ingresada al taller para su reparación deberá estar acompañada de una Orden de Servicio debidamente llenada. Este documento es esencial para que el taller pueda ofrecer el precio acordado y garantizar que los trabajos realizados sean los correctos. Sin la Orden de Servicio, el precio acordado podría no ser respetado.
+
+**2. PLAZO DE ENTREGA Y CARGOS POR RETRASO.**
+Se establecerá un plazo de entrega para cada motocicleta, el cual será acordado entre el cliente y el taller al momento de la recepción. En caso de que el cliente no recoja la moto en la fecha acordada, se cobrará un cargo adicional de **$100 pesos MXN por cada día de retraso**. Este cargo es para cubrir el espacio ocupado en el taller y los costos adicionales generados por la demora.
+
+**3. RESPONSABILIDAD DEL CLIENTE EN LA RETIRADA DE LA MOTO.**
+Es responsabilidad del cliente retirar la moto en el plazo acordado. Si el cliente no puede cumplir con la fecha de entrega, deberá notificar al taller con al menos 24 horas de anticipación para acordar una nueva fecha, y se tomará en cuenta si existen cargos adicionales por retrasos previos.
+
+**4. EVALUACIÓN DE DAÑOS Y PRESUPUESTO PREVIO.**
+Antes de iniciar cualquier trabajo de reparación, el taller proporcionará un presupuesto detallado que debe ser aprobado por el cliente. El presupuesto podrá modificarse si durante la reparación se encuentran daños adicionales no detectados en la evaluación inicial.
+
+**5. PIEZAS Y REPUESTOS.**
+Cualquier repuesto o pieza que se requiera para la reparación de la moto será adquirido por el taller con la aprobación previa del cliente. Los costos de los repuestos serán adicionales al presupuesto inicial y deberán ser cubiertos por el cliente al momento de la entrega de la moto.
+
+**6. GARANTÍA DE LOS TRABAJOS REALIZADOS.**
+El taller ofrece una garantía sobre los trabajos realizados, que podrá variar dependiendo del tipo de reparación o servicio. Esta garantía cubre defectos de mano de obra y piezas defectuosas durante un periodo de tiempo determinado.  
+**No incluye daños causados por mal uso, accidentes o negligencia del cliente. Además, El Box no se hace responsable por vehículos abandonados por más de 15 días.**
+
+**7. POLÍTICA DE CANCELACIÓN O MODIFICACIÓN DE TRABAJOS.**
+Si el cliente decide cancelar o modificar el trabajo una vez iniciado, se cobrará un cargo proporcional al avance realizado, el cual será determinado según el tipo de reparación. La cancelación deberá realizarse por escrito y con al menos 24 horas de antelación.
+""".trimIndent()
+
+// --- DIBUJAR TEXTO CON NEGRITAS REALES ---
+        y2 = drawRichMultilineText(
+            canvas2,
+            reglamento,
+            margin,
+            y2,
+            pageWidth - margin * 2,
+            paintBody,
+            paintBoldBody
+        )
+
+        doc.finishPage(page2)
+
         FileOutputStream(outFile).use { out -> doc.writeTo(out) }
         doc.close()
         return outFile

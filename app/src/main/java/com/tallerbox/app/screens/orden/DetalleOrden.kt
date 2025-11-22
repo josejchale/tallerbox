@@ -1,6 +1,7 @@
 package com.tallerbox.app.screens.orden
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -10,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -19,6 +21,8 @@ import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import com.tallerbox.app.repository.orden.OrdenRepository
 import com.tallerbox.app.repository.usuario.UsuarioRepository
 import com.tallerbox.app.utils.PdfGenerator
+import com.tallerbox.app.viewmodel.orden.OrdenViewModel
+import com.tallerbox.app.viewmodel.orden.OrdenViewModelFactory
 import com.tallerbox.app.viewmodel.usuario.UsuarioViewModel
 import com.tallerbox.app.viewmodel.usuario.UsuarioViewModelFactory
 import kotlinx.coroutines.Dispatchers
@@ -42,16 +46,21 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
     val usuarioRepo = UsuarioRepository(db.usuarioDao())
     val usuarioViewModel: UsuarioViewModel = viewModel(factory = UsuarioViewModelFactory(usuarioRepo))
     val firmaBase64 by usuarioViewModel.firma.collectAsState()
+    val ordenViewModel: OrdenViewModel = viewModel(factory = OrdenViewModelFactory(repo))
 
-
-    // 🔹 Estado local para manejar la carga de datos
+    // Estados internos
     var detalleResult by remember { mutableStateOf<Result<OrdenConClienteYVehiculo?>?>(null) }
+    var generandoPdf by remember { mutableStateOf(false) }
+    var pdfUri by remember { mutableStateOf<Uri?>(null) }
+
     val scope = rememberCoroutineScope()
-    var mostrarDialogoEntrega by remember { mutableStateOf(false) }
-    var nombreEntrega by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
 
+    LaunchedEffect(Unit) {
+        focusManager.clearFocus(force = true)
+    }
 
-    // 🔹 Cargar detalle al iniciar
+    // Cargar los datos al iniciar
     LaunchedEffect(ordenId) {
         scope.launch(Dispatchers.IO) {
             try {
@@ -63,6 +72,14 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
         }
     }
 
+    // ⬆️ Lanzamos el Intent fuera de la UI
+    LaunchedEffect(pdfUri) {
+        val uri = pdfUri ?: return@LaunchedEffect
+        pdfUri = null
+        showShareOptions(context, uri)
+    }
+
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -70,6 +87,8 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
             .padding(horizontal = 16.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+
+        // -------- DETALLES DE ORDEN ----------
         item {
             when {
                 detalleResult == null -> {
@@ -87,11 +106,17 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
                     if (data == null) {
                         Text("Orden no encontrada", style = MaterialTheme.typography.bodyMedium)
                     } else {
-                        TicketOrdenDetalle(data, ordenId, navController) {
-                            // Recargar después de actualizar estado
+                        TicketOrdenDetalle(
+                            data,
+                            ordenId,
+                            navController
+                        ) {
+                            // callback cuando TicketOrdenDetalle actualice algo
+                            // vuelve a cargar los datos
+                            val id = ordenId
                             scope.launch(Dispatchers.IO) {
                                 try {
-                                    val recarga = repo.obtenerOrdenConRelaciones(ordenId)
+                                    val recarga = repo.obtenerOrdenConRelaciones(id)
                                     detalleResult = Result.success(recarga)
                                 } catch (e: Exception) {
                                     detalleResult = Result.failure(e)
@@ -103,10 +128,9 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
             }
         }
 
-        item {
-            Spacer(modifier = Modifier.height(24.dp))
-        }
+        item { Spacer(Modifier.height(24.dp)) }
 
+        // -------- BOTONES -----------
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -115,53 +139,47 @@ fun DetalleOrdenScreen(navController: NavHostController, ordenId: Int?) {
                 Button(
                     onClick = { navController.navigate("main") },
                     modifier = Modifier.weight(1f)
-                ) {
-                    Text("Volver")
-                }
+                ) { Text("Volver") }
 
-                val contextForPdf = LocalContext.current
-                val scopeForPdf = rememberCoroutineScope()
+                val data = detalleResult?.getOrNull()
 
                 Button(
                     onClick = {
-                        val data = detalleResult?.getOrNull()
-                        if (data == null) {
-                            Toast.makeText(contextForPdf, "Orden no cargada", Toast.LENGTH_SHORT).show()
-                            return@Button
-                        }
-                        Log.d("DetalleOrden", "Firma recuperada: ${usuarioViewModel.firma.value}")
-                        scopeForPdf.launch(Dispatchers.IO) {
-                            try {
-                                val filename = "orden_${data.orden.numeroOrden}.pdf"
-                                val outFile = File(contextForPdf.cacheDir, filename)
-                                PdfGenerator.generateOrdenPdf(contextForPdf, data, outFile, firmaBase64)
+                        if (data == null || generandoPdf) return@Button
 
-                                val authority = "${contextForPdf.packageName}.fileprovider"
-                                val uri = FileProvider.getUriForFile(contextForPdf, authority, outFile)
+                        generandoPdf = true
 
-                                launch(Dispatchers.Main) {
-                                    showShareOptions(contextForPdf, uri)
+                        ordenViewModel.generarPdf(
+                            context,
+                            data,
+                            firmaBase64
+                        ) { outFile ->
+                            generandoPdf = false
+
+                            if (outFile != null) {
+                                scope.launch(Dispatchers.IO) {
+                                    val uri = FileProvider.getUriForFile(
+                                        context,
+                                        "${context.packageName}.fileprovider",
+                                        outFile
+                                    )
+                                    pdfUri = uri
                                 }
-                            } catch (e: Exception) {
-                                launch(Dispatchers.Main) {
-                                    Toast.makeText(
-                                        contextForPdf,
-                                        "Error generando PDF: ${e.message}",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
+                            } else {
+                                Toast.makeText(context, "Error generando PDF", Toast.LENGTH_LONG).show()
                             }
                         }
                     },
+                    enabled = !generandoPdf,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Enviar PDF")
+                    Text(if (generandoPdf) "Generando..." else "Enviar PDF")
                 }
-
             }
         }
     }
 }
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)

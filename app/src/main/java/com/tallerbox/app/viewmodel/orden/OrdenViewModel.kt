@@ -1,14 +1,20 @@
 package com.tallerbox.app.viewmodel.orden
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import com.tallerbox.app.model.orden.OrdenServicioEntity
 import com.tallerbox.app.repository.orden.OrdenRepository
+import com.tallerbox.app.utils.PdfGenerator
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 
 class OrdenViewModel(private val repo: OrdenRepository) : ViewModel() {
 
@@ -60,6 +66,28 @@ class OrdenViewModel(private val repo: OrdenRepository) : ViewModel() {
             onComplete?.invoke()
         }
     }
+
+    //Generador de PDF
+
+    fun generarPdf(
+        context: Context,
+        data: OrdenConClienteYVehiculo,
+        firmaBase64: String?,
+        onFinish: (File?) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    val out = File(context.cacheDir, "orden_${data.orden.numeroOrden}.pdf")
+                    PdfGenerator.generateOrdenPdf(context, data, out, firmaBase64)
+                }
+                onFinish(result)
+            } catch (e: Exception) {
+                onFinish(null)
+            }
+        }
+    }
+
 }
 
         // FACTORY
