@@ -14,9 +14,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.tallerbox.app.db.AppDatabase
 import com.tallerbox.app.navigation.drawerDestinations
+import com.tallerbox.app.repository.usuario.UsuarioRepository
+import com.tallerbox.app.viewmodel.usuario.UsuarioViewModel
+import com.tallerbox.app.viewmodel.usuario.UsuarioViewModelFactory
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,6 +30,12 @@ import kotlinx.coroutines.launch
 fun MainScreen(navController: NavController) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val db = AppDatabase.getDatabase(context)
+    val usuarioRepo = UsuarioRepository(db.usuarioDao())
+    val usuarioViewModel: UsuarioViewModel = viewModel(factory = UsuarioViewModelFactory(usuarioRepo))
+    val usuario by usuarioViewModel.usuario.collectAsState()
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -59,7 +71,10 @@ fun MainScreen(navController: NavController) {
                     Spacer(modifier = Modifier.width(12.dp))
 
                     Text(
-                        text = "Jhon Doe",
+                        text = when (usuario?.nombre.isNullOrBlank()) {
+                            true -> "SuperAdmin"
+                            false -> usuario!!.nombre
+                        },
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
