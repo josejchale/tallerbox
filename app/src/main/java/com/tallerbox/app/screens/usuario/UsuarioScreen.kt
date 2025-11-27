@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tallerbox.app.components.firma_pad.FirmaPad
 import com.tallerbox.app.db.AppDatabase
+import com.tallerbox.app.helper.parseFirma
 import com.tallerbox.app.viewmodel.usuario.UsuarioViewModel
 import com.tallerbox.app.viewmodel.usuario.UsuarioViewModelFactory
 import com.tallerbox.app.repository.usuario.UsuarioRepository
@@ -80,18 +81,29 @@ fun UsuarioPerfil() {
 
         Text("Firma:")
 
-        // ----------------- Mostrar firma si existe -----------------
+// ----------------- Mostrar firma si existe -----------------
         firmaBase64?.let { b64 ->
-            val bytes = Base64.decode(b64, Base64.DEFAULT)
-            val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-            Image(
-                bitmap = bmp.asImageBitmap(),
-                contentDescription = "Firma",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-            )
+            val bmp = parseFirma(b64)?.let { firma ->
+                try {
+                    val bytes = Base64.decode(firma.base64, Base64.DEFAULT)
+                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                } catch (e: Exception) {
+                    Log.e("UsuarioPerfil", "Error decodificando firma", e)
+                    null
+                }
+            }
+
+            bmp?.let {
+                Image(
+                    bitmap = it.asImageBitmap(),
+                    contentDescription = "Firma",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                )
+            }
         }
+
 
         // ------------- Botón para abrir FirmaPad en Dialog --------------
         if (editable) {

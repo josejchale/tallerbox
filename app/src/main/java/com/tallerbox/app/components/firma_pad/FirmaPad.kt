@@ -114,17 +114,16 @@ fun FirmaPad(
             }) {
                 Text("Limpiar")
             }
-
             Button(onClick = {
-                val width = 640
-                val height = 320
+                val width = 1280
+                val height = 640
                 val bitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888)
                 val canvas = AndroidCanvas(bitmap)
                 canvas.drawColor(android.graphics.Color.WHITE)
 
                 val paint = AndroidPaint().apply {
                     color = android.graphics.Color.BLACK
-                    strokeWidth = strokeWidthPx
+                    strokeWidth = 1.5f
                     style = AndroidPaint.Style.STROKE
                     isAntiAlias = true
                     strokeJoin = AndroidPaint.Join.ROUND
@@ -136,7 +135,11 @@ fun FirmaPad(
                 val outputStream = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
                 val base64 = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
-                onFirmaConfirmada(base64)
+
+                val guideRatio = 0.8f
+                val finalEncoded = "R$${guideRatio}$$base64"
+
+                onFirmaConfirmada(finalEncoded)
             }) {
                 Text("Confirmar firma")
             }
