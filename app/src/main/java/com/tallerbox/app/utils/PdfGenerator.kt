@@ -21,6 +21,7 @@ import kotlin.math.min
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.get
 import androidx.core.graphics.set
+import com.tallerbox.app.helper.parseFirma
 
 object PdfGenerator {
 
@@ -203,13 +204,13 @@ object PdfGenerator {
         // CAMBIO: Fuente 8pt (Regular) para
         val paintBody = Paint().apply {
             color = Color.BLACK
-            textSize = 10f
+            textSize = 8f
             isAntiAlias = true
         }
 
         val paintBoldBody = Paint().apply {
             color = Color.BLACK
-            textSize = 10f
+            textSize = 8f
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             isAntiAlias = true
         }
@@ -224,7 +225,7 @@ object PdfGenerator {
         // CAMBIO: Fuente X más pequeña para que quepa en filas de 8pt
         val paintX = Paint().apply {
             color = Color.BLACK
-            textSize = 10f // Reducido de 12f
+            textSize = 8f // Reducido de 12f
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             isAntiAlias = true
         }
@@ -776,19 +777,11 @@ object PdfGenerator {
         y += lineSpacing
 
 // === Firma optimizada (preprocesada) ===
-        if (!firmaBase64.isNullOrBlank()) {
-            preprocessSignature(firmaBase64)?.let { sigBitmap ->
-
-                // Escalar para que encaje EXACTO en la línea
+        parseFirma(firmaBase64)?.let { firma ->
+            preprocessSignature(firma.base64)?.let { sigBitmap ->
                 val scaledBitmap = Bitmap.createScaledBitmap(sigBitmap, 180, 80, true)
-
-                // Dibujar justo encima de la línea
-                canvas.drawBitmap(
-                    scaledBitmap,
-                    lineStartX,
-                    firmaY - scaledBitmap.height + 8f, // Ajuste para que quede justo arriba
-                    null
-                )
+                val firmaOffsetY = lineY - scaledBitmap.height * (1f - firma.ratio)
+                canvas.drawBitmap(scaledBitmap, lineStartX, firmaOffsetY, null)
             }
         }
 
@@ -832,19 +825,13 @@ object PdfGenerator {
         y += lineSpacing
 
 // Firma digital del consumidor
-        orden.firmaClienteBase64?.takeIf { it.isNotBlank() }?.let { b64 ->
-            preprocessSignature(b64)?.let { sigBitmap ->
-
-                // Ajustar tamaño para encajar en la línea
-                val scaled = Bitmap.createScaledBitmap(sigBitmap, 180, 80, true)
-
-                // Dibujo alineado justo encima de la línea (igual que la primera firma)
-                canvas.drawBitmap(
-                    scaled,
-                    consumerLineStartX,
-                    sigY - scaled.height + 8f,
-                    null
-                )
+        orden.firmaClienteBase64?.takeIf { it.isNotBlank() }?.let { base64 ->
+            parseFirma(base64)?.let { firma ->
+                preprocessSignature(firma.base64)?.let { sigBitmap ->
+                    val scaled = Bitmap.createScaledBitmap(sigBitmap, 180, 80, true)
+                    val firmaOffsetY = sigY - scaled.height * (1f - firma.ratio)
+                    canvas.drawBitmap(scaled, consumerLineStartX, firmaOffsetY, null)
+                }
             }
         }
 
