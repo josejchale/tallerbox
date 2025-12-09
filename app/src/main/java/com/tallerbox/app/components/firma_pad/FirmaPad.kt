@@ -76,6 +76,7 @@ fun FirmaPad(
                     }
             ) {
                 val guideY = size.height * 0.8f
+                val guideRatio = guideY / size.height
                 drawLine(
                     color = Color.DarkGray,
                     start = Offset(0f, guideY),
@@ -123,26 +124,32 @@ fun FirmaPad(
 
                 val paint = AndroidPaint().apply {
                     color = android.graphics.Color.BLACK
-                    strokeWidth = 1.5f
+                    strokeWidth = 2f
                     style = AndroidPaint.Style.STROKE
                     isAntiAlias = true
                     strokeJoin = AndroidPaint.Join.ROUND
                     strokeCap = AndroidPaint.Cap.ROUND
                 }
 
+// Dibujar la firma
                 canvas.drawPath(androidPath, paint)
+
+// Dibujar la línea guía en el Bitmap exportado
+                val guideY = height * 0.8f
+                canvas.drawLine(0f, guideY, width.toFloat(), guideY, paint)
 
                 val outputStream = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
                 val base64 = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
 
-                val guideRatio = 0.8f
+                val guideRatio = guideY / height
                 val finalEncoded = "R$${guideRatio}$$base64"
 
                 onFirmaConfirmada(finalEncoded)
             }) {
                 Text("Confirmar firma")
             }
+
         }
     }
 }

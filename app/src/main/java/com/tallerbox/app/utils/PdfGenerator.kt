@@ -22,6 +22,8 @@ import androidx.core.graphics.createBitmap
 import androidx.core.graphics.get
 import androidx.core.graphics.set
 import com.tallerbox.app.helper.parseFirma
+import com.tallerbox.app.helper.parseFirma
+import com.tallerbox.app.helper.drawFirmaSobreLinea
 
 object PdfGenerator {
 
@@ -30,65 +32,6 @@ object PdfGenerator {
     private const val PAGE_HEIGHT = 792
     private val localeMx = Locale.Builder().setLanguage("es").setRegion("MX").build()
     private val dateFormatter = SimpleDateFormat("dd/MM/yyyy", localeMx)
-
-    private fun resizeSignatureBase64(base64: String, maxWidth: Int = 800): Bitmap? {
-        return try {
-            // Decodificar Base64
-            val decodedBytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
-            val original = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size) ?: return null
-
-            // Si ya es pequeña, no hacemos nada
-            if (original.width <= maxWidth) {
-                return original.copy(Bitmap.Config.ARGB_8888, true)
-            }
-
-            // Escalado manteniendo proporción
-            val scale = maxWidth.toFloat() / original.width
-            val newHeight = (original.height * scale).toInt()
-
-            Bitmap.createScaledBitmap(original, maxWidth, newHeight, true)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    private fun removeWhiteBackground(bitmap: Bitmap): Bitmap {
-        val width = bitmap.width
-        val height = bitmap.height
-
-        // Copia ARGB para permitir transparencia
-        val result = bitmap.copy(Bitmap.Config.ARGB_8888, true)
-
-        // Arreglo donde cargamos todos los píxeles de una sola vez
-        val pixels = IntArray(width * height)
-        result.getPixels(pixels, 0, width, 0, 0, width, height)
-
-        // Umbral para detectar blanco (tunable)
-        val threshold = 240
-
-        for (i in pixels.indices) {
-            val color = pixels[i]
-
-            val r = Color.red(color)
-            val g = Color.green(color)
-            val b = Color.blue(color)
-
-            // Si es casi blanco → transparente
-            if (r > threshold && g > threshold && b > threshold) {
-                pixels[i] = Color.TRANSPARENT
-            }
-        }
-
-        // Escribimos todos los píxeles optimizados de vuelta de un solo golpe
-        result.setPixels(pixels, 0, width, 0, 0, width, height)
-
-        return result
-    }
-
-    private fun preprocessSignature(base64: String): Bitmap? {
-        val resized = resizeSignatureBase64(base64) ?: return null
-        return removeWhiteBackground(resized)
-    }
 
 
 
@@ -762,28 +705,27 @@ object PdfGenerator {
         canvas.drawText("Costo de la revisión: $$costoStr", margin, y, paintBody)
         y += lineSpacing
 
-// Firma del prestador (texto + línea alineada verticalmente)
+// === Firma del prestador ===
         val firmaText = "Firma del prestador de servicios:"
         val firmaY = y
         canvas.drawText(firmaText, margin, firmaY, paintBody)
 
-// Línea a la derecha del texto, alineada con baseline
+// Línea a la derecha del texto
         val firmaTextWidth = paintBody.measureText(firmaText)
-        val lineStartX = margin + firmaTextWidth + 16f
-        val lineEndX = lineStartX + 180f
-        val lineY = firmaY
-        canvas.drawLine(lineStartX, lineY, lineEndX, lineY, paintLine)
+        val prestadorLineStartX = margin + firmaTextWidth + 16f
+        val prestadorLineEndX = prestadorLineStartX + 180f
+        val prestadorLineY = firmaY
+//firma
+        parseFirma(firmaBase64)?.let { firma ->
+            drawFirmaSobreLinea(canvas, firma, prestadorLineStartX, prestadorLineY)
+        }
+
+// Dibujar línea después
+        canvas.drawLine(prestadorLineStartX, prestadorLineY, prestadorLineEndX, prestadorLineY, paintLine)
 
         y += lineSpacing
 
-// === Firma optimizada (preprocesada) ===
-        parseFirma(firmaBase64)?.let { firma ->
-            preprocessSignature(firma.base64)?.let { sigBitmap ->
-                val scaledBitmap = Bitmap.createScaledBitmap(sigBitmap, 180, 80, true)
-                val firmaOffsetY = lineY - scaledBitmap.height * (1f - firma.ratio)
-                canvas.drawBitmap(scaledBitmap, lineStartX, firmaOffsetY, null)
-            }
-        }
+
 
 // Fecha en formato largo español
         val fechaActual = Date()
@@ -811,29 +753,26 @@ object PdfGenerator {
 
 // === Firma del consumidor (alineada como la del prestador) ===
 
-// Texto: "Firma de autorización del consumidor:"
+// === Firma del consumidor ===
         val signatureText = "Firma de autorización del consumidor:"
         val sigY = y
         canvas.drawText(signatureText, margin, sigY, paintBody)
 
-// Línea alineada a la derecha del texto
+// Línea a la derecha del texto
         val sigTextWidth = paintBody.measureText(signatureText)
         val consumerLineStartX = margin + sigTextWidth + 16f
         val consumerLineEndX = consumerLineStartX + 180f
-        canvas.drawLine(consumerLineStartX, sigY, consumerLineEndX, sigY, paintLine)
+        val consumerLineY = sigY
+
+// Dibujar firma primero
+        parseFirma(orden.firmaClienteBase64)?.let { firma ->
+            drawFirmaSobreLinea(canvas, firma, consumerLineStartX, consumerLineY)
+        }
+
+// Dibujar línea después
+        canvas.drawLine(consumerLineStartX, consumerLineY, consumerLineEndX, consumerLineY, paintLine)
 
         y += lineSpacing
-
-// Firma digital del consumidor
-        orden.firmaClienteBase64?.takeIf { it.isNotBlank() }?.let { base64 ->
-            parseFirma(base64)?.let { firma ->
-                preprocessSignature(firma.base64)?.let { sigBitmap ->
-                    val scaled = Bitmap.createScaledBitmap(sigBitmap, 180, 80, true)
-                    val firmaOffsetY = sigY - scaled.height * (1f - firma.ratio)
-                    canvas.drawBitmap(scaled, consumerLineStartX, firmaOffsetY, null)
-                }
-            }
-        }
 
         y += 32f
 
