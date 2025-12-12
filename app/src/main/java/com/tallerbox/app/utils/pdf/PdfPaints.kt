@@ -53,6 +53,11 @@ object PdfPaints {
         isAntiAlias = true
     }
 
+    val bodyBold = Paint(body).apply {
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+    }
+
+
     val line = Paint().apply {
         color = Color.BLACK
         strokeWidth = 1f

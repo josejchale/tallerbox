@@ -8,7 +8,7 @@ import com.tallerbox.app.utils.pdf.TextHelpers
 
 object PdfHeaderDrawer {
 
-    fun drawHeader(context: Context, canvas: Canvas, pageWidth: Int, margin: Float): Float {
+    fun draw(context: Context, canvas: Canvas, pageWidth: Int, margin: Float): Float {
         val paintHeaderTitle = PdfPaints.headerTitle
         val paintHeaderInfo = PdfPaints.headerInfo
         val paintLine = PdfPaints.line

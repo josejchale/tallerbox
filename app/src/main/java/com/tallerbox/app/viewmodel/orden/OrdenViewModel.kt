@@ -77,9 +77,9 @@ class OrdenViewModel(private val repo: OrdenRepository) : ViewModel() {
     ) {
         viewModelScope.launch {
             try {
-                val result = withContext(Dispatchers.IO) {
+                val result: File? = withContext(Dispatchers.IO) {
                     val out = File(context.cacheDir, "orden_${data.orden.numeroOrden}.pdf")
-                    PdfGenerator.generateOrdenPdf(context, data, out, firmaBase64)
+                    PdfGenerator.generateOrdenPdf(context, data, firmaBase64, out)
                 }
                 onFinish(result)
             } catch (e: Exception) {
