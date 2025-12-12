@@ -64,7 +64,7 @@ object LegalAndSignaturesBlock {
         canvas.drawText(prestadorText, margin, y, paintBody)
 
         val prestadorTextWidth = paintBody.measureText(prestadorText)
-        val prestadorSigX = margin + prestadorTextWidth + 20f
+        val prestadorSigX = margin + prestadorTextWidth + 12f
 
         decodeBase64(firmaBase64)?.let { firmaBmp ->
             drawSignature(canvas, firmaBmp, prestadorSigX, y)
@@ -96,13 +96,13 @@ object LegalAndSignaturesBlock {
         canvas.drawText(consumidorText, margin, y, paintBody)
 
         val consumidorTextWidth = paintBody.measureText(consumidorText)
-        val consumidorSigX = margin + consumidorTextWidth + 20f
+        val consumidorSigX = margin + consumidorTextWidth + 12f
 
         decodeBase64(orden.firmaClienteBase64)?.let { firmaBmp ->
             drawSignature(canvas, firmaBmp, consumidorSigX, y)
         }
 
-        y += lineSpacing + 32f
+        y += lineSpacing + 20f
 
         // === NOTA IMPORTANTE ===
         val boldPaint = Paint(paintBody).apply {

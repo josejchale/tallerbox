@@ -1,4 +1,4 @@
-package com.tallerbox.app.utils.pdf.tables
+package com.tallerbox.app.utils.pdf
 
 import android.graphics.Canvas
 import android.graphics.Color

@@ -4,14 +4,14 @@ import android.content.Context
 import android.graphics.pdf.PdfDocument
 import android.graphics.Canvas
 import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
+import com.tallerbox.app.utils.pdf.ClientOrderAndServiceDataBlock
 import com.tallerbox.app.utils.pdf.FailureDescriptionBlock
 import com.tallerbox.app.utils.pdf.LegalAndSignaturesBlock
 import com.tallerbox.app.utils.pdf.PdfHeaderDrawer
 import com.tallerbox.app.utils.pdf.PdfPaints
 import com.tallerbox.app.utils.pdf.ReglamentoBlock
 import com.tallerbox.app.utils.pdf.VehicleConditionsBlock
-import com.tallerbox.app.utils.pdf.tables.ClientOrderAndServiceDataBlock
-import com.tallerbox.app.utils.pdf.tables.VehicleDataTable
+import com.tallerbox.app.utils.pdf.VehicleDataTable
 import java.io.File
 import java.io.FileOutputStream
 
@@ -48,12 +48,12 @@ object PdfGenerator {
 
         y = PdfHeaderDrawer.draw(context, canvas1, pageWidth, margin)
 
-        y = ClientOrderAndServiceDataBlock.draw(canvas1, data, pageWidth, y + 20f, margin)
-        y = VehicleDataTable.draw(canvas1, data, pageWidth, y + 20f, margin)
-        y = FailureDescriptionBlock.draw(canvas1, data, pageWidth, y + 20f, margin)
-        y = VehicleConditionsBlock.draw(canvas1, data, pageWidth, y + 20f, margin)
+        y = ClientOrderAndServiceDataBlock.draw(canvas1, data, pageWidth, y + 10f, margin)
+        y = VehicleDataTable.draw(canvas1, data, pageWidth, y + 10f, margin)
+        y = FailureDescriptionBlock.draw(canvas1, data, pageWidth, y + 10f, margin)
+        y = VehicleConditionsBlock.draw(canvas1, data, pageWidth, y + 10f, margin)
 
-        y = LegalAndSignaturesBlock.draw(canvas1, data, pageWidth, y + 30f, margin, firmaPrestadorBase64)
+        y = LegalAndSignaturesBlock.draw(canvas1, data, pageWidth, y + 10f, margin, firmaPrestadorBase64)
 
         doc.finishPage(page1)
 
