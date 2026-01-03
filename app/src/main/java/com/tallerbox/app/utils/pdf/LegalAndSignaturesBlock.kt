@@ -3,9 +3,9 @@ package com.tallerbox.app.utils.pdf
 import android.graphics.*
 import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import com.tallerbox.app.utils.pdf.TextHelpers.drawMultilineText
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import android.util.Base64
 
 object LegalAndSignaturesBlock {
 
@@ -15,21 +15,42 @@ object LegalAndSignaturesBlock {
     private fun decodeBase64(base64: String?): Bitmap? {
         return try {
             if (base64.isNullOrBlank()) return null
-            val bytes = Base64.getDecoder().decode(base64)
+
+            val cleanBase64 = base64
+                .replace("data:image/png;base64,", "")
+                .replace("data:image/jpeg;base64,", "")
+                .trim()
+
+            val bytes = Base64.decode(cleanBase64, Base64.DEFAULT)
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-        } catch (_: Exception) { null }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
+
 
     /**
      * Dibuja la firma justo encima del texto, SIN línea
      */
     private fun drawSignature(canvas: Canvas, bmp: Bitmap, x: Float, y: Float) {
-        val targetW = 130f
+        val scale = 1.15f              // 🔥 +15%
+        val baseWidth = 130f
+        val targetW = baseWidth * scale
+
         val aspect = bmp.height.toFloat() / bmp.width.toFloat()
         val targetH = targetW * aspect
-        val dest = RectF(x, y - targetH + 6f, x + targetW, y + 6f)
+
+        val dest = RectF(
+            x,
+            y - targetH + 6f,
+            x + targetW,
+            y + 6f
+        )
+
         canvas.drawBitmap(bmp, null, dest, null)
     }
+
 
     fun draw(
         canvas: Canvas,
@@ -54,7 +75,7 @@ object LegalAndSignaturesBlock {
         // === 2. COSTO DE LA REVISIÓN ===
         val costo = orden.costos.costo
         val costoStr = String.format(Locale("es", "MX"), "%.2f", costo)
-        val lineSpacing = 12f
+        val lineSpacing = 10f
 
         canvas.drawText("Costo de la revisión: $$costoStr", margin, y, paintBody)
         y += lineSpacing
@@ -64,7 +85,7 @@ object LegalAndSignaturesBlock {
         canvas.drawText(prestadorText, margin, y, paintBody)
 
         val prestadorTextWidth = paintBody.measureText(prestadorText)
-        val prestadorSigX = margin + prestadorTextWidth + 12f
+        val prestadorSigX = margin + prestadorTextWidth + 10f
 
         decodeBase64(firmaBase64)?.let { firmaBmp ->
             drawSignature(canvas, firmaBmp, prestadorSigX, y)
@@ -76,7 +97,7 @@ object LegalAndSignaturesBlock {
         val fechaActual = Date()
         val fechaFormateada = SimpleDateFormat("d 'de' MMMM 'de' yyyy", Locale("es", "MX")).format(fechaActual)
         canvas.drawText("Fecha: $fechaFormateada", margin, y, paintBody)
-        y += lineSpacing + 12f
+        y += lineSpacing + 10f
 
         // === 3. CLÁUSULA CESIÓN ===
         val clausula = "${indent}El consumidor: ( X ) Acepta que el prestador del servicio pueda ceder o transmitir el vehículo, sus partes o piezas, a terceros (como torneros, soldadores u otros especialistas), ya sea con fines de reparación o para la obtención de cotizaciones de costos y precios, siempre bajo consentimiento informado."
@@ -96,13 +117,13 @@ object LegalAndSignaturesBlock {
         canvas.drawText(consumidorText, margin, y, paintBody)
 
         val consumidorTextWidth = paintBody.measureText(consumidorText)
-        val consumidorSigX = margin + consumidorTextWidth + 12f
+        val consumidorSigX = margin + consumidorTextWidth + 10f
 
         decodeBase64(orden.firmaClienteBase64)?.let { firmaBmp ->
             drawSignature(canvas, firmaBmp, consumidorSigX, y)
         }
 
-        y += lineSpacing + 20f
+        y += lineSpacing + 10f
 
         // === NOTA IMPORTANTE ===
         val boldPaint = Paint(paintBody).apply {

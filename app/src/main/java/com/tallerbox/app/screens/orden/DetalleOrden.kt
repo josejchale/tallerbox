@@ -2,7 +2,6 @@ package com.tallerbox.app.screens.orden
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,14 +19,12 @@ import com.tallerbox.app.db.AppDatabase
 import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import com.tallerbox.app.repository.orden.OrdenRepository
 import com.tallerbox.app.repository.usuario.UsuarioRepository
-import com.tallerbox.app.utils.PdfGenerator
 import com.tallerbox.app.viewmodel.orden.OrdenViewModel
 import com.tallerbox.app.viewmodel.orden.OrdenViewModelFactory
 import com.tallerbox.app.viewmodel.usuario.UsuarioViewModel
 import com.tallerbox.app.viewmodel.usuario.UsuarioViewModelFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 

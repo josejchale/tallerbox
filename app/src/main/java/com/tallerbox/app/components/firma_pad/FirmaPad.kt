@@ -7,12 +7,10 @@ import android.graphics.Path as AndroidPath
 import android.util.Base64
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -20,137 +18,129 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import java.io.ByteArrayOutputStream
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.core.graphics.createBitmap
+import java.io.ByteArrayOutputStream
+
+private const val SIGNATURE_HEIGHT_DP = 200
 
 @Composable
 fun FirmaPad(
     modifier: Modifier = Modifier,
     onFirmaConfirmada: (String) -> Unit
 ) {
-    var trazos by remember { mutableStateOf(listOf<List<Offset>>()) }
-    var trazoActual by remember { mutableStateOf(listOf<Offset>()) }
-
+    var puntos by remember { mutableStateOf(listOf<Offset>()) }
     val androidPath = remember { AndroidPath() }
-    val strokeWidthPx = with(LocalDensity.current) { 2.dp.toPx() }
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Firma del cliente", style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
+    val density = LocalDensity.current
+    val strokeWidthPx = with(density) { 2.dp.toPx() }
 
-        Box(
+    Column(modifier = modifier.background(MaterialTheme.colorScheme.surface)) {
+
+        Canvas(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(160.dp)
+                .height(SIGNATURE_HEIGHT_DP.dp)
                 .background(Color.White)
-                .border(2.dp, Color.Gray)
-        ) {
-            Canvas(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(Unit) {
-                        detectDragGestures(
-                            onDragStart = { offset ->
-                                trazoActual = listOf(offset)
-                                androidPath.moveTo(offset.x, offset.y)
-                            },
-                            onDragEnd = {
-                                trazos = trazos + listOf(trazoActual)
-                                trazoActual = emptyList()
-                            },
-                            onDrag = { change, _ ->
-                                val pos = change.position
-                                trazoActual = trazoActual + pos
-                                androidPath.lineTo(pos.x, pos.y)
-                            }
-                        )
-                    }
-            ) {
-                val guideY = size.height * 0.8f
-                val guideRatio = guideY / size.height
-                drawLine(
-                    color = Color.DarkGray,
-                    start = Offset(0f, guideY),
-                    end = Offset(size.width, guideY),
-                    strokeWidth = 1f
-                )
-
-                (trazos + listOf(trazoActual)).forEach { trazo ->
-                    if (trazo.size > 1) {
-                        val path = Path().apply {
-                            moveTo(trazo.first().x, trazo.first().y)
-                            trazo.drop(1).forEach { lineTo(it.x, it.y) }
+                .pointerInput(Unit) {
+                    detectDragGestures(
+                        onDragStart = { offset ->
+                            puntos = puntos + offset
+                            androidPath.moveTo(offset.x, offset.y)
+                        },
+                        onDrag = { change, _ ->
+                            val pos = change.position
+                            puntos = puntos + pos
+                            androidPath.lineTo(pos.x, pos.y)
                         }
-                        drawPath(
-                            path = path,
-                            color = Color.Black,
-                            style = Stroke(
-                                width = strokeWidthPx,
-                                cap = StrokeCap.Round,
-                                join = StrokeJoin.Round
-                            )
-                        )
-                    }
+                    )
                 }
+        ) {
+            val w = size.width
+            val h = size.height
+
+            // 🟦 CONTORNO DEL ÁREA DE FIRMA
+            drawRect(
+                color = Color.Gray,
+                size = size,
+                style = Stroke(width = 2f)
+            )
+
+            // ➖ LÍNEA GUÍA DE FIRMA (75% de altura)
+            val guideY = h * 0.75f
+            drawLine(
+                color = Color.DarkGray,
+                start = Offset(16f, guideY),
+                end = Offset(w - 16f, guideY),
+                strokeWidth = 1.5f
+            )
+
+            // ✍️ TRAZOS DE LA FIRMA
+            if (puntos.isNotEmpty()) {
+                val composePath = Path().apply {
+                    moveTo(puntos.first().x, puntos.first().y)
+                    puntos.forEach { lineTo(it.x, it.y) }
+                }
+                drawPath(
+                    path = composePath,
+                    color = Color.Black,
+                    style = Stroke(
+                        width = strokeWidthPx,
+                        cap = StrokeCap.Round,
+                        join = StrokeJoin.Round
+                    )
+                )
             }
         }
 
+        Spacer(modifier = Modifier.height(8.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             TextButton(onClick = {
-                trazos = emptyList()
-                trazoActual = emptyList()
+                puntos = emptyList()
                 androidPath.reset()
             }) {
                 Text("Limpiar")
             }
+
             Button(onClick = {
-                val width = 1280
-                val height = 640
-                val bitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                // 🔄 EXPORTAR EXACTAMENTE EL MISMO ÁREA
+                val widthPx = with(density) { 800.dp.toPx().toInt() }
+                val heightPx = with(density) { SIGNATURE_HEIGHT_DP.dp.toPx().toInt() }
+
+                val bitmap = createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888)
                 val canvas = AndroidCanvas(bitmap)
                 canvas.drawColor(android.graphics.Color.WHITE)
 
                 val paint = AndroidPaint().apply {
                     color = android.graphics.Color.BLACK
-                    strokeWidth = 2f
+                    strokeWidth = strokeWidthPx
                     style = AndroidPaint.Style.STROKE
                     isAntiAlias = true
                     strokeJoin = AndroidPaint.Join.ROUND
                     strokeCap = AndroidPaint.Cap.ROUND
                 }
 
-// Dibujar la firma
+                // ✍️ SOLO LA FIRMA (SIN BORDE NI LÍNEA)
                 canvas.drawPath(androidPath, paint)
-
-// Dibujar la línea guía en el Bitmap exportado
-                val guideY = height * 0.8f
-                canvas.drawLine(0f, guideY, width.toFloat(), guideY, paint)
 
                 val outputStream = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-                val base64 = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
 
-                val guideRatio = guideY / height
-                val finalEncoded = "R$${guideRatio}$$base64"
+                val base64 = Base64.encodeToString(
+                    outputStream.toByteArray(),
+                    Base64.NO_WRAP
+                )
 
-                onFirmaConfirmada(finalEncoded)
+                onFirmaConfirmada(base64)
             }) {
                 Text("Confirmar firma")
             }
-
         }
     }
 }
-

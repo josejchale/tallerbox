@@ -22,14 +22,14 @@ object PdfGenerator {
      *
      * @param context Context necesario para recursos (logo, etc.)
      * @param data Datos de la orden
-     * @param firmaPrestadorBase64 Firma del prestador (Base64). Puede ser null.
+     * @param firmaBase64 Firma del prestador (Base64). Puede ser null.
      * @param outFile File de salida (donde se escribirá el PDF)
      * @return outFile después de escribir el PDF
      */
     fun generateOrdenPdf(
         context: Context,
         data: OrdenConClienteYVehiculo,
-        firmaPrestadorBase64: String?,
+        firmaBase64: String?,
         outFile: File   // ← YA NO ES NULLABLE
     ): File {
 
@@ -52,8 +52,7 @@ object PdfGenerator {
         y = VehicleDataTable.draw(canvas1, data, pageWidth, y + 10f, margin)
         y = FailureDescriptionBlock.draw(canvas1, data, pageWidth, y + 10f, margin)
         y = VehicleConditionsBlock.draw(canvas1, data, pageWidth, y + 10f, margin)
-
-        y = LegalAndSignaturesBlock.draw(canvas1, data, pageWidth, y + 10f, margin, firmaPrestadorBase64)
+        y = LegalAndSignaturesBlock.draw(canvas1, data, pageWidth, y + 10f, margin, firmaBase64)
 
         doc.finishPage(page1)
 
