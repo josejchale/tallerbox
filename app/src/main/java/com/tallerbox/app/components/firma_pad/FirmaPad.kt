@@ -31,11 +31,12 @@ fun FirmaPad(
     modifier: Modifier = Modifier,
     onFirmaConfirmada: (String) -> Unit
 ) {
-    var puntos by remember { mutableStateOf(listOf<Offset>()) }
-    val androidPath = remember { AndroidPath() }
-
     val density = LocalDensity.current
     val strokeWidthPx = with(density) { 2.dp.toPx() }
+
+    // 🟢 Cada trazo es una lista de puntos
+    var strokes by remember { mutableStateOf(listOf<List<Offset>>()) }
+    var currentStroke by remember { mutableStateOf<List<Offset>>(emptyList()) }
 
     Column(modifier = modifier.background(MaterialTheme.colorScheme.surface)) {
 
@@ -47,13 +48,14 @@ fun FirmaPad(
                 .pointerInput(Unit) {
                     detectDragGestures(
                         onDragStart = { offset ->
-                            puntos = puntos + offset
-                            androidPath.moveTo(offset.x, offset.y)
+                            currentStroke = listOf(offset)
                         },
                         onDrag = { change, _ ->
-                            val pos = change.position
-                            puntos = puntos + pos
-                            androidPath.lineTo(pos.x, pos.y)
+                            currentStroke = currentStroke + change.position
+                        },
+                        onDragEnd = {
+                            strokes = strokes + listOf(currentStroke)
+                            currentStroke = emptyList()
                         }
                     )
                 }
@@ -61,14 +63,14 @@ fun FirmaPad(
             val w = size.width
             val h = size.height
 
-            // 🟦 CONTORNO DEL ÁREA DE FIRMA
+            // 🔲 BORDE
             drawRect(
                 color = Color.Gray,
                 size = size,
                 style = Stroke(width = 2f)
             )
 
-            // ➖ LÍNEA GUÍA DE FIRMA (75% de altura)
+            // ➖ LÍNEA GUÍA
             val guideY = h * 0.75f
             drawLine(
                 color = Color.DarkGray,
@@ -77,21 +79,23 @@ fun FirmaPad(
                 strokeWidth = 1.5f
             )
 
-            // ✍️ TRAZOS DE LA FIRMA
-            if (puntos.isNotEmpty()) {
-                val composePath = Path().apply {
-                    moveTo(puntos.first().x, puntos.first().y)
-                    puntos.forEach { lineTo(it.x, it.y) }
-                }
-                drawPath(
-                    path = composePath,
-                    color = Color.Black,
-                    style = Stroke(
-                        width = strokeWidthPx,
-                        cap = StrokeCap.Round,
-                        join = StrokeJoin.Round
+            // ✍️ DIBUJAR TODOS LOS TRAZOS (incluido el actual)
+            (strokes + listOf(currentStroke)).forEach { stroke ->
+                if (stroke.size > 1) {
+                    val path = Path().apply {
+                        moveTo(stroke.first().x, stroke.first().y)
+                        stroke.drop(1).forEach { lineTo(it.x, it.y) }
+                    }
+                    drawPath(
+                        path = path,
+                        color = Color.Black,
+                        style = Stroke(
+                            width = strokeWidthPx,
+                            cap = StrokeCap.Round,
+                            join = StrokeJoin.Round
+                        )
                     )
-                )
+                }
             }
         }
 
@@ -102,20 +106,19 @@ fun FirmaPad(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             TextButton(onClick = {
-                puntos = emptyList()
-                androidPath.reset()
+                strokes = emptyList()
+                currentStroke = emptyList()
             }) {
                 Text("Limpiar")
             }
 
             Button(onClick = {
-                // 🔄 EXPORTAR EXACTAMENTE EL MISMO ÁREA
                 val widthPx = with(density) { 800.dp.toPx().toInt() }
                 val heightPx = with(density) { SIGNATURE_HEIGHT_DP.dp.toPx().toInt() }
 
+                // 🟢 BITMAP TRANSPARENTE
                 val bitmap = createBitmap(widthPx, heightPx, Bitmap.Config.ARGB_8888)
                 val canvas = AndroidCanvas(bitmap)
-                canvas.drawColor(android.graphics.Color.WHITE)
 
                 val paint = AndroidPaint().apply {
                     color = android.graphics.Color.BLACK
@@ -126,8 +129,16 @@ fun FirmaPad(
                     strokeCap = AndroidPaint.Cap.ROUND
                 }
 
-                // ✍️ SOLO LA FIRMA (SIN BORDE NI LÍNEA)
-                canvas.drawPath(androidPath, paint)
+                // Convertir strokes → AndroidPath
+                strokes.forEach { stroke ->
+                    if (stroke.size > 1) {
+                        val path = AndroidPath().apply {
+                            moveTo(stroke.first().x, stroke.first().y)
+                            stroke.drop(1).forEach { lineTo(it.x, it.y) }
+                        }
+                        canvas.drawPath(path, paint)
+                    }
+                }
 
                 val outputStream = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)

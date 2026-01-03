@@ -8,7 +8,7 @@ object PdfPaints {
 
     val headerTitle = Paint().apply {
         textSize = 14f
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        typeface = Typeface.DEFAULT_BOLD
         color = Color.BLACK
         isAntiAlias = true
     }
@@ -21,21 +21,21 @@ object PdfPaints {
 
     val sectionTitle = Paint().apply {
         textSize = 11f
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        typeface = Typeface.DEFAULT_BOLD
         color = Color.BLACK
         isAntiAlias = true
     }
 
     val boxTitle = Paint().apply {
         textSize = 10f
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        typeface = Typeface.DEFAULT_BOLD
         color = Color.BLACK
         isAntiAlias = true
     }
 
     val tableHeader = Paint().apply {
         textSize = 8f
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        typeface = Typeface.DEFAULT_BOLD
         color = Color.DKGRAY
         isAntiAlias = true
     }
@@ -46,17 +46,11 @@ object PdfPaints {
         isAntiAlias = true
     }
 
-    val boldBody = Paint().apply {
-        textSize = 8f
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+    val bodyBold = Paint(body).apply {
+        typeface = Typeface.DEFAULT_BOLD
         color = Color.BLACK
         isAntiAlias = true
     }
-
-    val bodyBold = Paint(body).apply {
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-    }
-
 
     val line = Paint().apply {
         color = Color.BLACK
@@ -68,7 +62,7 @@ object PdfPaints {
     val paintX = Paint().apply {
         color = Color.BLACK
         textSize = 8f
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        typeface = Typeface.DEFAULT_BOLD
         isAntiAlias = true
     }
 }

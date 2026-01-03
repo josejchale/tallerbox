@@ -1,11 +1,12 @@
 package com.tallerbox.app.utils.pdf
 
 import android.graphics.*
+import android.util.Base64
 import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import com.tallerbox.app.utils.pdf.TextHelpers.drawMultilineText
 import java.text.SimpleDateFormat
 import java.util.*
-import android.util.Base64
+import com.tallerbox.app.utils.pdf.TextHelpers.drawRichMultilineText
 
 object LegalAndSignaturesBlock {
 
@@ -24,32 +25,64 @@ object LegalAndSignaturesBlock {
             val bytes = Base64.decode(cleanBase64, Base64.DEFAULT)
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
         } catch (e: Exception) {
-            e.printStackTrace()
             null
         }
     }
 
-
-    /**
-     * Dibuja la firma justo encima del texto, SIN línea
-     */
-    private fun drawSignature(canvas: Canvas, bmp: Bitmap, x: Float, y: Float) {
-        val scale = 1.15f              // 🔥 +15%
-        val baseWidth = 130f
+    private fun drawSignature(
+        canvas: Canvas,
+        bmp: Bitmap,
+        x: Float,
+        baselineY: Float,
+        textPaint: Paint
+    ) {
+        // 🔧 Tamaño de firma
+        val scale = 2f
+        val baseWidth = 200f
         val targetW = baseWidth * scale
 
         val aspect = bmp.height.toFloat() / bmp.width.toFloat()
         val targetH = targetW * aspect
 
+        // ➖ Línea más corta (70% del ancho de la firma)
+        val lineWidth = targetW * 0.7f
+        val lineStartX = x
+        val lineEndX = x + lineWidth
+
+        // 📍 Posición base de la línea (no altera el flujo)
+        val lineY = baselineY + 6f
+
+        // ✍️ Firma centrada y justo encima de la línea
+        val gap = -20f // separación mínima firma-línea
+        val signatureBottom = lineY - gap
+        val signatureTop = signatureBottom - targetH
+
         val dest = RectF(
             x,
-            y - targetH + 6f,
+            signatureTop,
             x + targetW,
-            y + 6f
+            signatureBottom
         )
 
+        // Dibujar firma
         canvas.drawBitmap(bmp, null, dest, null)
+
+        // Dibujar línea
+        val linePaint = Paint(textPaint).apply {
+            strokeWidth = 1.5f
+            style = Paint.Style.STROKE
+            isAntiAlias = true
+        }
+
+        canvas.drawLine(
+            lineStartX,
+            lineY,
+            lineEndX,
+            lineY,
+            linePaint
+        )
     }
+
 
 
     fun draw(
@@ -62,76 +95,109 @@ object LegalAndSignaturesBlock {
     ): Float {
 
         val paintBody = PdfPaints.body
-
         var y = startY
         val indent = "     "
-
         val orden = data.orden
-
-        // === 1. PÁRRAFO LEGAL ===
-        val legal1 = "${indent}En caso de que el presupuesto no sea aceptado, el consumidor deberá cubrir exclusivamente el costo de la revisión y diagnóstico. El prestador del servicio se compromete a devolver la motocicleta en las mismas condiciones en las que fue entregada, salvo las consecuencias inevitables derivadas del diagnóstico."
-        y = drawMultilineText(canvas, legal1, margin, y, pageWidth - margin * 2, paintBody) + 12f
-
-        // === 2. COSTO DE LA REVISIÓN ===
-        val costo = orden.costos.costo
-        val costoStr = String.format(Locale("es", "MX"), "%.2f", costo)
         val lineSpacing = 10f
 
+        // === PÁRRAFO LEGAL ===
+        val legal1 =
+            "${indent}En caso de que el presupuesto no sea aceptado, el consumidor deberá cubrir exclusivamente el costo de la revisión y diagnóstico. El prestador del servicio se compromete a devolver la motocicleta en las mismas condiciones en las que fue entregada, salvo las consecuencias inevitables derivadas del diagnóstico."
+
+        y = drawMultilineText(
+            canvas,
+            legal1,
+            margin,
+            y,
+            pageWidth - margin * 2,
+            paintBody
+        ) + 12f
+
+        // === COSTO ===
+        val costoStr = String.format(Locale("es", "MX"), "%.2f", orden.costos.costo)
         canvas.drawText("Costo de la revisión: $$costoStr", margin, y, paintBody)
         y += lineSpacing
 
-        // === FIRMA DEL PRESTADOR (SIN LÍNEA, SOLO FIRMA) ===
+        // === FIRMA PRESTADOR ===
         val prestadorText = "Firma del prestador de servicios:"
         canvas.drawText(prestadorText, margin, y, paintBody)
 
-        val prestadorTextWidth = paintBody.measureText(prestadorText)
-        val prestadorSigX = margin + prestadorTextWidth + 10f
+        val prestadorSigX =
+            margin + paintBody.measureText(prestadorText) + 10f
 
-        decodeBase64(firmaBase64)?.let { firmaBmp ->
-            drawSignature(canvas, firmaBmp, prestadorSigX, y)
+        decodeBase64(firmaBase64)?.let { bmp ->
+            drawSignature(canvas, bmp, prestadorSigX, y, paintBody)
         }
 
         y += lineSpacing
 
         // === FECHA ===
-        val fechaActual = Date()
-        val fechaFormateada = SimpleDateFormat("d 'de' MMMM 'de' yyyy", Locale("es", "MX")).format(fechaActual)
-        canvas.drawText("Fecha: $fechaFormateada", margin, y, paintBody)
+        val fecha = SimpleDateFormat(
+            "d 'de' MMMM 'de' yyyy",
+            Locale("es", "MX")
+        ).format(Date())
+
+        canvas.drawText("Fecha: $fecha", margin, y, paintBody)
         y += lineSpacing + 10f
 
-        // === 3. CLÁUSULA CESIÓN ===
-        val clausula = "${indent}El consumidor: ( X ) Acepta que el prestador del servicio pueda ceder o transmitir el vehículo, sus partes o piezas, a terceros (como torneros, soldadores u otros especialistas), ya sea con fines de reparación o para la obtención de cotizaciones de costos y precios, siempre bajo consentimiento informado."
-        y = drawMultilineText(canvas, clausula, margin, y, pageWidth - margin * 2, paintBody) + 12f
+        // === CLÁUSULA ===
+        val clausula =
+            "${indent}El consumidor: ( X ) Acepta que el prestador del servicio pueda ceder o transmitir el vehículo, sus partes o piezas, a terceros (como torneros, soldadores u otros especialistas), ya sea con fines de reparación o para la obtención de cotizaciones de costos y precios, siempre bajo consentimiento informado."
 
-        // === 4. PUBLICIDAD ===
-        val aceptaPublicidad = orden.aceptaEnvioPublicidad
-        val publicidad = if (aceptaPublicidad)
-            "( X ) Acepta   (   ) No acepta que el prestador de servicios envíe publicidad."
-        else
-            "(   ) Acepta   ( X ) No acepta que el prestador de servicios envíe publicidad."
+        y = drawMultilineText(
+            canvas,
+            clausula,
+            margin,
+            y,
+            pageWidth - margin * 2,
+            paintBody
+        ) + 12f
 
-        y = drawMultilineText(canvas, publicidad, margin, y, pageWidth - margin * 2, paintBody) + 20f
+        // === PUBLICIDAD ===
+        val publicidad =
+            if (orden.aceptaEnvioPublicidad)
+                "( X ) Acepta   (   ) No acepta que el prestador de servicios envíe publicidad."
+            else
+                "(   ) Acepta   ( X ) No acepta que el prestador de servicios envíe publicidad."
 
-        // === FIRMA DEL CONSUMIDOR ===
+        y = drawMultilineText(
+            canvas,
+            publicidad,
+            margin,
+            y,
+            pageWidth - margin * 2,
+            paintBody
+        ) + 20f
+
+        // === FIRMA CONSUMIDOR ===
         val consumidorText = "Firma de autorización del consumidor:"
         canvas.drawText(consumidorText, margin, y, paintBody)
 
-        val consumidorTextWidth = paintBody.measureText(consumidorText)
-        val consumidorSigX = margin + consumidorTextWidth + 10f
+        val consumidorSigX =
+            margin + paintBody.measureText(consumidorText) + 10f
 
-        decodeBase64(orden.firmaClienteBase64)?.let { firmaBmp ->
-            drawSignature(canvas, firmaBmp, consumidorSigX, y)
+        decodeBase64(orden.firmaClienteBase64)?.let { bmp ->
+            drawSignature(canvas, bmp, consumidorSigX, y, paintBody)
         }
 
         y += lineSpacing + 10f
 
-        // === NOTA IMPORTANTE ===
+        // === NOTA FINAL ===
         val boldPaint = Paint(paintBody).apply {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         }
 
-        val note = "NOTA IMPORTANTE: Al firmar este documento, el consumidor declara haber leído y estar de acuerdo con el reglamento interno del taller mecánico."
-        y = drawMultilineText(canvas, note, margin, y, pageWidth - margin * 2, boldPaint)
+        val note =
+            "NOTA IMPORTANTE: Al firmar este documento, el consumidor declara haber leído y estar de acuerdo con el reglamento interno del taller mecánico."
+
+        y = drawMultilineText(
+            canvas,
+            note,
+            margin,
+            y,
+            pageWidth - margin * 2,
+            boldPaint
+        )
 
         return y
     }

@@ -37,7 +37,7 @@ object PdfGenerator {
 
         val pageWidth = 612
         val pageHeight = 792
-        val margin = 40f
+        val margin = 30f
 
         // --- Página 1 ---
         val pageInfo1 = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create()
