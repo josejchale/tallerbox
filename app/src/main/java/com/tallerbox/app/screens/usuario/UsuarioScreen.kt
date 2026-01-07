@@ -4,13 +4,18 @@ import android.graphics.BitmapFactory
 import android.util.Base64
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -71,13 +76,32 @@ fun UsuarioPerfil() {
         }
 
         // ---------------- CAMPO: Nombre ----------------
-        OutlinedTextField(
-            value = nombre,
-            onValueChange = { nombre = it },
-            label = { Text("Nombre") },
-            enabled = editable,
-            modifier = Modifier.fillMaxWidth()
-        )
+        if (editable) {
+            OutlinedTextField(
+                value = nombre,
+                onValueChange = { nombre = it },
+                label = {
+                    Text(
+                        "Nombre",
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                },
+                readOnly = false,
+                enabled = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+        } else {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text("Nombre", style = MaterialTheme.typography.labelSmall)
+                Text(
+                    text = nombre,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+        }
+
 
         Text("Firma:")
 
@@ -94,14 +118,42 @@ fun UsuarioPerfil() {
             }
 
             bmp?.let {
-                Image(
-                    bitmap = it.asImageBitmap(),
-                    contentDescription = "Firma",
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
-                )
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(280.dp)
+                            .height(140.dp)
+                            .shadow(
+                                elevation = 6.dp,
+                                shape = MaterialTheme.shapes.medium,
+                                clip = false
+                            )
+                            .background(
+                                color = MaterialTheme.colorScheme.surface,
+                                shape = MaterialTheme.shapes.medium
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline,
+                                shape = MaterialTheme.shapes.medium
+                            )
+                            .padding(12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            bitmap = it.asImageBitmap(),
+                            contentDescription = "Firma",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+                }
             }
+
         }
 
 
