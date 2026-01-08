@@ -44,7 +44,6 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "tallerbox_db"
                 )
-                    .fallbackToDestructiveMigration()
                     .build()
 
                 INSTANCE = instance

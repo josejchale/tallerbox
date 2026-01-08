@@ -1,0 +1,461 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 12,
+    "identityHash": "824a682df9b17fdbbbec4616041df89c",
+    "entities": [
+      {
+        "tableName": "clientes",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `nombreCompleto` TEXT NOT NULL, `calle` TEXT NOT NULL, `numeroCasa` TEXT, `calle1` TEXT NOT NULL, `calle2` TEXT NOT NULL, `estado` TEXT NOT NULL, `municipio` TEXT NOT NULL, `telefono` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombreCompleto",
+            "columnName": "nombreCompleto",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "calle",
+            "columnName": "calle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numeroCasa",
+            "columnName": "numeroCasa",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calle1",
+            "columnName": "calle1",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "calle2",
+            "columnName": "calle2",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estado",
+            "columnName": "estado",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "municipio",
+            "columnName": "municipio",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "telefono",
+            "columnName": "telefono",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "vehiculos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `clienteId` INTEGER NOT NULL, `marca` TEXT NOT NULL, `modelo` TEXT NOT NULL, `ano` TEXT NOT NULL, `color` TEXT NOT NULL, `vin` TEXT NOT NULL, `placa` TEXT, FOREIGN KEY(`clienteId`) REFERENCES `clientes`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clienteId",
+            "columnName": "clienteId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "marca",
+            "columnName": "marca",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modelo",
+            "columnName": "modelo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ano",
+            "columnName": "ano",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vin",
+            "columnName": "vin",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "placa",
+            "columnName": "placa",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_vehiculos_clienteId",
+            "unique": false,
+            "columnNames": [
+              "clienteId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_vehiculos_clienteId` ON `${TABLE_NAME}` (`clienteId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "clientes",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "clienteId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "orden_servicio",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `clienteId` INTEGER NOT NULL, `vehiculoId` INTEGER, `numeroOrden` TEXT NOT NULL, `fechaIngreso` INTEGER NOT NULL, `fechaEntregaEstimado` INTEGER, `fechaEntregaReal` INTEGER, `descripcionFalla` TEXT, `trabajoRealizado` TEXT, `notas` TEXT, `firmaClienteBase64` TEXT, `aceptaEnvioPublicidad` INTEGER NOT NULL, `aceptaCedencia` INTEGER NOT NULL, `estadoOrden` TEXT, `recepcion` TEXT NOT NULL, `entrega` TEXT NOT NULL, `cond_espejos` TEXT NOT NULL, `cond_asientos` TEXT NOT NULL, `cond_faroDelantero` TEXT NOT NULL, `cond_luzTrasera` TEXT NOT NULL, `cond_direccionales` TEXT NOT NULL, `cond_cubiertas` TEXT NOT NULL, `cond_taponGasolina` TEXT NOT NULL, `cond_pedales` TEXT NOT NULL, `cond_parabrisas` TEXT NOT NULL, `cond_claxon` TEXT NOT NULL, `cond_taponAceite` TEXT NOT NULL, `cond_taponRadiador` TEXT NOT NULL, `cond_filtroAire` TEXT NOT NULL, `cond_bateria` TEXT NOT NULL, `cond_llaves` TEXT NOT NULL, `cond_observaciones` TEXT, `costo_costo` REAL NOT NULL, FOREIGN KEY(`clienteId`) REFERENCES `clientes`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`vehiculoId`) REFERENCES `vehiculos`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clienteId",
+            "columnName": "clienteId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vehiculoId",
+            "columnName": "vehiculoId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "numeroOrden",
+            "columnName": "numeroOrden",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaIngreso",
+            "columnName": "fechaIngreso",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaEntregaEstimado",
+            "columnName": "fechaEntregaEstimado",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fechaEntregaReal",
+            "columnName": "fechaEntregaReal",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "descripcionFalla",
+            "columnName": "descripcionFalla",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "trabajoRealizado",
+            "columnName": "trabajoRealizado",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "notas",
+            "columnName": "notas",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "firmaClienteBase64",
+            "columnName": "firmaClienteBase64",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "aceptaEnvioPublicidad",
+            "columnName": "aceptaEnvioPublicidad",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aceptaCedencia",
+            "columnName": "aceptaCedencia",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estadoOrden",
+            "columnName": "estadoOrden",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "recepcion",
+            "columnName": "recepcion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "entrega",
+            "columnName": "entrega",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.espejos",
+            "columnName": "cond_espejos",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.asientos",
+            "columnName": "cond_asientos",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.faroDelantero",
+            "columnName": "cond_faroDelantero",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.luzTrasera",
+            "columnName": "cond_luzTrasera",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.direccionales",
+            "columnName": "cond_direccionales",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.cubiertas",
+            "columnName": "cond_cubiertas",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.taponGasolina",
+            "columnName": "cond_taponGasolina",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.pedales",
+            "columnName": "cond_pedales",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.parabrisas",
+            "columnName": "cond_parabrisas",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.claxon",
+            "columnName": "cond_claxon",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.taponAceite",
+            "columnName": "cond_taponAceite",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.taponRadiador",
+            "columnName": "cond_taponRadiador",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.filtroAire",
+            "columnName": "cond_filtroAire",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.bateria",
+            "columnName": "cond_bateria",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.llaves",
+            "columnName": "cond_llaves",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "condiciones.observaciones",
+            "columnName": "cond_observaciones",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "costos.costo",
+            "columnName": "costo_costo",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_orden_servicio_clienteId",
+            "unique": false,
+            "columnNames": [
+              "clienteId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_orden_servicio_clienteId` ON `${TABLE_NAME}` (`clienteId`)"
+          },
+          {
+            "name": "index_orden_servicio_vehiculoId",
+            "unique": false,
+            "columnNames": [
+              "vehiculoId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_orden_servicio_vehiculoId` ON `${TABLE_NAME}` (`vehiculoId`)"
+          },
+          {
+            "name": "index_orden_servicio_numeroOrden",
+            "unique": true,
+            "columnNames": [
+              "numeroOrden"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_orden_servicio_numeroOrden` ON `${TABLE_NAME}` (`numeroOrden`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "clientes",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "clienteId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "vehiculos",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "vehiculoId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "usuario",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `nombre` TEXT NOT NULL, `firmaBase64` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "firmaBase64",
+            "columnName": "firmaBase64",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '824a682df9b17fdbbbec4616041df89c')"
+    ]
+  }
+}
