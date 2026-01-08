@@ -6,6 +6,8 @@ import android.graphics.Paint
 import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import com.tallerbox.app.utils.pdf.TextHelpers.drawMultilineText
 import com.tallerbox.app.utils.pdf.PdfPaints
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 object ClientOrderAndServiceDataBlock {
 
@@ -126,8 +128,12 @@ object ClientOrderAndServiceDataBlock {
 
         // === ORDEN ===
         val numeroOrden = orden.numeroOrden
-        val fechaIngreso = orden.fechaIngreso?.toString() ?: "—"
-        val fechaEntrega = orden.fechaEntregaEstimado?.toString() ?: "—"
+
+// Formateador en español
+        val dateFormatter = SimpleDateFormat("d 'de' MMMM 'del' yyyy", Locale("es", "MX"))
+
+        val fechaIngreso = orden.fechaIngreso.let { dateFormatter.format(it) } ?: "—"
+        val fechaEntrega = orden.fechaEntregaEstimado?.let { dateFormatter.format(it) } ?: "—"
 
         val rightLabelX = rightColX + 6f
         val rightValueX = rightColX + rightLabelWidth + 6f
@@ -147,6 +153,7 @@ object ClientOrderAndServiceDataBlock {
         ry = rightRow3 + rightVerticalOffset
         canvas.drawText("FECHA DE ENTREGA:", rightLabelX, ry, paintBoxTitle)
         drawMultilineText(canvas, fechaEntrega, rightValueX, rightRow3 + rightTextYOffset, rightValueMaxWidth, paintBody)
+
 
         return blockTop + clientBlockHeight + 20f
     }

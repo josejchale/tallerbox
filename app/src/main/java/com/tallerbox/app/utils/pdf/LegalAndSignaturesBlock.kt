@@ -6,7 +6,6 @@ import com.tallerbox.app.model.orden.OrdenConClienteYVehiculo
 import com.tallerbox.app.utils.pdf.TextHelpers.drawMultilineText
 import java.text.SimpleDateFormat
 import java.util.*
-import com.tallerbox.app.utils.pdf.TextHelpers.drawRichMultilineText
 
 object LegalAndSignaturesBlock {
 
@@ -182,9 +181,10 @@ object LegalAndSignaturesBlock {
 
         y += lineSpacing + 10f
 
-        // === NOTA FINAL ===
+// === NOTA FINAL ===
         val boldPaint = Paint(paintBody).apply {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            textSize = 8f
         }
 
         val note =

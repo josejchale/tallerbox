@@ -55,21 +55,21 @@ fun RegistroOrdenScreen(
     var notas by remember { mutableStateOf("") }
 
     // condiciones: usar enum EstadoCondicion (SI/NO/ROTO)
-    var espejos by remember { mutableStateOf(EstadoCondicion.NO) }
-    var asientos by remember { mutableStateOf(EstadoCondicion.NO) }
-    var faroDelantero by remember { mutableStateOf(EstadoCondicion.NO) }
-    var luzTrasera by remember { mutableStateOf(EstadoCondicion.NO) }
-    var direccionales by remember { mutableStateOf(EstadoCondicion.NO) }
-    var cubiertas by remember { mutableStateOf(EstadoCondicion.NO) }
-    var taponGasolina by remember { mutableStateOf(EstadoCondicion.NO) }
-    var pedales by remember { mutableStateOf(EstadoCondicion.NO) }
-    var parabrisas by remember { mutableStateOf(EstadoCondicion.NO) }
-    var claxon by remember { mutableStateOf(EstadoCondicion.NO) }
-    var taponAceite by remember { mutableStateOf(EstadoCondicion.NO) }
-    var taponRadiador by remember { mutableStateOf(EstadoCondicion.NO) }
-    var filtroAire by remember { mutableStateOf(EstadoCondicion.NO) }
-    var bateria by remember { mutableStateOf(EstadoCondicion.NO) }
-    var llaves by remember { mutableStateOf(EstadoCondicion.NO) }
+    var espejos by remember { mutableStateOf(EstadoCondicion.SI) }
+    var asientos by remember { mutableStateOf(EstadoCondicion.SI) }
+    var faroDelantero by remember { mutableStateOf(EstadoCondicion.SI) }
+    var luzTrasera by remember { mutableStateOf(EstadoCondicion.SI) }
+    var direccionales by remember { mutableStateOf(EstadoCondicion.SI) }
+    var cubiertas by remember { mutableStateOf(EstadoCondicion.SI) }
+    var taponGasolina by remember { mutableStateOf(EstadoCondicion.SI) }
+    var pedales by remember { mutableStateOf(EstadoCondicion.SI) }
+    var parabrisas by remember { mutableStateOf(EstadoCondicion.SI) }
+    var claxon by remember { mutableStateOf(EstadoCondicion.SI) }
+    var taponAceite by remember { mutableStateOf(EstadoCondicion.SI) }
+    var taponRadiador by remember { mutableStateOf(EstadoCondicion.SI) }
+    var filtroAire by remember { mutableStateOf(EstadoCondicion.SI) }
+    var bateria by remember { mutableStateOf(EstadoCondicion.SI) }
+    var llaves by remember { mutableStateOf(EstadoCondicion.SI) }
     var observacionesCond by remember { mutableStateOf("") }
 
     // costo
