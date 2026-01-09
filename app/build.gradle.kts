@@ -5,7 +5,23 @@ plugins {
     kotlin("kapt")
 }
 
+// Se define la ubicación del archivo de firma (debe estar en la raíz del proyecto)
+val keystoreFile = project.rootProject.file("tallerbox_keystore.jks") // <-- ¡IMPORTANTE! Asegúrate de que este sea el nombre de tu archivo.
+
 android {
+    // ---- BLOQUE DE FIRMA AÑADIDO ----
+    signingConfigs {
+        create("release") {
+            if (keystoreFile.exists()) {
+                storeFile = keystoreFile
+                storePassword = System.getenv("TALLERBOX_KEYSTORE_PASSWORD") ?: property("TALLERBOX_KEYSTORE_PASSWORD") as String
+                keyAlias = System.getenv("TALLERBOX_KEY_ALIAS") ?: property("TALLERBOX_KEY_ALIAS") as String
+                keyPassword = System.getenv("TALLERBOX_KEY_PASSWORD") ?: property("TALLERBOX_KEY_PASSWORD") as String
+            }
+        }
+    }
+    // ---- FIN DEL BLOQUE DE FIRMA ----
+
     namespace = "com.tallerbox.app"
     compileSdk = 36
 
@@ -24,7 +40,6 @@ android {
                 arg("room.schemaLocation", "$projectDir/schemas")
             }
         }
-
     }
 
     buildTypes {
@@ -34,7 +49,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            setProperty("archivesBaseName", "TallerBox-v${defaultConfig.versionName}")        }
+            setProperty("archivesBaseName", "TallerBox-v${defaultConfig.versionName}")
+
+            // ---- LÍNEA AÑADIDA PARA ASIGNAR LA FIRMA ----
+            signingConfig = signingConfigs.getByName("release")
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -70,6 +89,4 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.material.icons.extended)
-
-
 }
