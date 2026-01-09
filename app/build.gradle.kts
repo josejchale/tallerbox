@@ -34,7 +34,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-        }
+            setProperty("archivesBaseName", "TallerBox-v${defaultConfig.versionName}")        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
