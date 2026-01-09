@@ -6,18 +6,16 @@ plugins {
 }
 
 // Se define la ubicación del archivo de firma (debe estar en la raíz del proyecto)
-val keystoreFile = project.rootProject.file("tallerbox_keystore.jks") // <-- ¡IMPORTANTE! Asegúrate de que este sea el nombre de tu archivo.
+val keystoreFile = project.rootProject.file("tallerbox_keystore.jks") // <-- ¡REVISA QUE ESTE NOMBRE SEA CORRECTO!
 
 android {
-    // ---- BLOQUE DE FIRMA AÑADIDO ----
+    // ---- BLOQUE DE FIRMA MODIFICADO (SIN EL 'IF') ----
     signingConfigs {
         create("release") {
-            if (keystoreFile.exists()) {
-                storeFile = keystoreFile
-                storePassword = System.getenv("TALLERBOX_KEYSTORE_PASSWORD") ?: property("TALLERBOX_KEYSTORE_PASSWORD") as String
-                keyAlias = System.getenv("TALLERBOX_KEY_ALIAS") ?: property("TALLERBOX_KEY_ALIAS") as String
-                keyPassword = System.getenv("TALLERBOX_KEY_PASSWORD") ?: property("TALLERBOX_KEY_PASSWORD") as String
-            }
+            storeFile = keystoreFile
+            storePassword = System.getenv("TALLERBOX_KEYSTORE_PASSWORD") ?: property("TALLERBOX_KEYSTORE_PASSWORD") as String
+            keyAlias = System.getenv("TALLERBOX_KEY_ALIAS") ?: property("TALLERBOX_KEY_ALIAS") as String
+            keyPassword = System.getenv("TALLERBOX_KEY_PASSWORD") ?: property("TALLERBOX_KEY_PASSWORD") as String
         }
     }
     // ---- FIN DEL BLOQUE DE FIRMA ----
@@ -51,7 +49,7 @@ android {
             )
             setProperty("archivesBaseName", "TallerBox-v${defaultConfig.versionName}")
 
-            // ---- LÍNEA AÑADIDA PARA ASIGNAR LA FIRMA ----
+            // ---- LÍNEA PARA ASIGNAR LA FIRMA ----
             signingConfig = signingConfigs.getByName("release")
         }
     }
@@ -68,7 +66,7 @@ android {
 }
 
 dependencies {
-
+    // ... (tus dependencias no cambian)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -90,3 +88,4 @@ dependencies {
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.material.icons.extended)
 }
+    
