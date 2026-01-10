@@ -133,7 +133,7 @@ object ClientOrderAndServiceDataBlock {
         val dateFormatter = SimpleDateFormat("d 'de' MMMM 'del' yyyy", Locale("es", "MX"))
 
         val fechaIngreso = orden.fechaIngreso.let { dateFormatter.format(it) } ?: "—"
-        val fechaEntrega = orden.fechaEntregaEstimado?.let { dateFormatter.format(it) } ?: "—"
+        val fechaEntrega = orden.fechaEntregaReal?.let { dateFormatter.format(it) } ?: "—"
 
         val rightLabelX = rightColX + 6f
         val rightValueX = rightColX + rightLabelWidth + 6f
