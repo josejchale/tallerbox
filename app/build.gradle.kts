@@ -48,9 +48,10 @@ android {
                 "proguard-rules.pro"
             )
             setProperty("archivesBaseName", "TallerBox-v${defaultConfig.versionName}")
+            signingConfig = signingConfigs.getByName("debug")
 
             // ---- LÍNEA PARA ASIGNAR LA FIRMA ----
-            signingConfig = signingConfigs.getByName("release")
+          //  signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
