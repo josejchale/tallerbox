@@ -19,11 +19,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.tallerbox.app.db.AppDatabase
-import com.tallerbox.app.navigation.drawerDestinations
 import com.tallerbox.app.repository.usuario.UsuarioRepository
+import com.tallerbox.app.screens.outlet.SideMenu
+import com.tallerbox.app.screens.outlet.AppLayout
 import com.tallerbox.app.viewmodel.usuario.UsuarioViewModel
 import com.tallerbox.app.viewmodel.usuario.UsuarioViewModelFactory
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,83 +36,12 @@ fun MainScreen(navController: NavController) {
     val usuarioViewModel: UsuarioViewModel = viewModel(factory = UsuarioViewModelFactory(usuarioRepo))
     val usuario by usuarioViewModel.usuario.collectAsState()
 
-
-    ModalNavigationDrawer(
+    AppLayout(
         drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet(
-                modifier = Modifier.padding(WindowInsets.statusBars.asPaddingValues())
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        onClick = {
-                            navController.navigate("usuario_perfil")
-                            scope.launch { drawerState.close() }
-                        },
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = MaterialTheme.shapes.medium
-                            )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Editar perfil",
-                            tint = Color.White
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Text(
-                        text = when (usuario?.nombre.isNullOrBlank()) {
-                            true -> "SuperAdmin"
-                            false -> usuario!!.nombre
-                        },
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    thickness = DividerDefaults.Thickness,
-                    color = DividerDefaults.color
-                )
-
-                drawerDestinations.forEach { item ->
-                    NavigationDrawerItem(
-                        label = { Text(item.label) },
-                        selected = false,
-                        icon = { Icon(item.icon, contentDescription = null) },
-                        onClick = {
-                            navController.navigate(item.route)
-                            scope.launch { drawerState.close() }
-                        }
-                    )
-                }
-
-            }
-        }
-    ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("TallerBox") },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Abrir menú")
-                        }
-                    }
-                )
-            },
-            modifier = Modifier.fillMaxSize()
-        ) { innerPadding ->
+        sideMenu = {
+            SideMenu(navController, drawerState, usuario, scope)
+        },
+        content = { innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -129,44 +58,25 @@ fun MainScreen(navController: NavController) {
                         .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Button(onClick = {
-                        navController.navigate("registro_cliente")
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.AddCircle,
-                            contentDescription = "Nuevo Cliente",
-                            modifier = Modifier.size(20.dp)
-                        )
+                    Button(onClick = { navController.navigate("registro_cliente") }) {
+                        Icon(Icons.Filled.AddCircle, contentDescription = "Nuevo Cliente", modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Nuevo Cliente")
                     }
 
-                    Button(onClick = {
-                        navController.navigate("registro_vehiculo")
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.AddCircle,
-                            contentDescription = "Nuevo Vehiculo",
-                            modifier = Modifier.size(20.dp)
-                        )
+                    Button(onClick = { navController.navigate("registro_vehiculo") }) {
+                        Icon(Icons.Filled.AddCircle, contentDescription = "Nuevo Vehiculo", modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Nuevo Vehiculo")
                     }
 
-                    Button(onClick = {
-                        navController.navigate("registro_orden")
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.AddCircle,
-                            contentDescription = "Nueva orden",
-                            modifier = Modifier.size(20.dp)
-                        )
+                    Button(onClick = { navController.navigate("registro_orden") }) {
+                        Icon(Icons.Filled.AddCircle, contentDescription = "Nueva orden", modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Nueva Orden")
                     }
                 }
-
             }
         }
-    }
+    )
 }

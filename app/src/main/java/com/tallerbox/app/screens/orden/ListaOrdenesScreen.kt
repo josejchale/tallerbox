@@ -85,11 +85,11 @@ fun ListaOrdenesScreen(
                 val grouped = ordenes.groupBy { it.estadoOrden?.lowercase() ?: "desconocido" }
 
                 val estados = listOf(
-                    "pendiente" to Color(0xFF73FFEF),
-                    "en proceso" to Color(0xFFFFE23A),
-                    "completada" to Color(0xFF6BFF14),
-                    "entregada" to Color(0xFFDBDBDB),
-                    "cancelado" to Color(0xFFFF5767)
+                    "pendiente" to Color(0xFFBCE6FF),
+                    "en proceso" to Color(0xFF88CDF6),
+                    "completada" to Color(0xFF2D82B5),
+                    "entregada" to Color(0xFF015C92),
+                    "cancelado" to Color(0xFFEF5350)
                 )
 
                 estados.forEach { (estado, color) ->
