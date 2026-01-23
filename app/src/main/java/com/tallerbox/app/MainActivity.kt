@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.navigation.compose.rememberNavController
 import com.tallerbox.app.navigation.AppNavigation
+import com.tallerbox.app.screens.outlet.RootScreen
 import com.tallerbox.app.ui.theme.TallerBoxTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,7 +20,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
 
                 Surface(color = MaterialTheme.colorScheme.background) {
-                    AppNavigation(navController)
+                    RootScreen()
                 }
             }
         }

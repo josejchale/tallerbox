@@ -28,55 +28,38 @@ import com.tallerbox.app.viewmodel.usuario.UsuarioViewModelFactory
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(navController: NavController) {
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-    val context = LocalContext.current
-    val db = AppDatabase.getDatabase(context)
-    val usuarioRepo = UsuarioRepository(db.usuarioDao())
-    val usuarioViewModel: UsuarioViewModel = viewModel(factory = UsuarioViewModelFactory(usuarioRepo))
-    val usuario by usuarioViewModel.usuario.collectAsState()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.Start
+    ) {
+        Text("Acciones Rápidas", style = MaterialTheme.typography.titleMedium)
 
-    AppLayout(
-        drawerState = drawerState,
-        sideMenu = {
-            SideMenu(navController, drawerState, usuario, scope)
-        },
-        content = { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.Start
-            ) {
-                Text("Acciones Rápidas", style = MaterialTheme.typography.titleMedium)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Button(onClick = { navController.navigate("registro_cliente") }) {
+                Icon(Icons.Filled.AddCircle, contentDescription = "Nuevo Cliente", modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Nuevo Cliente")
+            }
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Button(onClick = { navController.navigate("registro_cliente") }) {
-                        Icon(Icons.Filled.AddCircle, contentDescription = "Nuevo Cliente", modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Nuevo Cliente")
-                    }
+            Button(onClick = { navController.navigate("registro_vehiculo") }) {
+                Icon(Icons.Filled.AddCircle, contentDescription = "Nuevo Vehiculo", modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Nuevo Vehiculo")
+            }
 
-                    Button(onClick = { navController.navigate("registro_vehiculo") }) {
-                        Icon(Icons.Filled.AddCircle, contentDescription = "Nuevo Vehiculo", modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Nuevo Vehiculo")
-                    }
-
-                    Button(onClick = { navController.navigate("registro_orden") }) {
-                        Icon(Icons.Filled.AddCircle, contentDescription = "Nueva orden", modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Nueva Orden")
-                    }
-                }
+            Button(onClick = { navController.navigate("registro_orden") }) {
+                Icon(Icons.Filled.AddCircle, contentDescription = "Nueva orden", modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Nueva Orden")
             }
         }
-    )
+    }
 }
