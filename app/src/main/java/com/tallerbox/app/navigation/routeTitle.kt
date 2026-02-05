@@ -1,7 +1,7 @@
 package com.tallerbox.app.navigation
 
 val routeTitles = mapOf(
-    "main" to "Menú Principal",
+    "main" to "TallerBox",
     "usuario_perfil" to "Perfil de Usuario",
     "registro_cliente" to "Registro de Cliente",
     "lista_clientes" to "Lista de Clientes",

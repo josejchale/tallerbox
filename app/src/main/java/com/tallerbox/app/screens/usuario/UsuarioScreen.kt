@@ -60,7 +60,7 @@ fun UsuarioPerfil() {
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 20.dp)
-            .padding(top = 60.dp),
+            .padding(top = 80.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
 
@@ -68,8 +68,6 @@ fun UsuarioPerfil() {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Perfil de Usuario", style = MaterialTheme.typography.headlineSmall)
-
             IconButton(onClick = { editable = !editable }) {
                 Icon(Icons.Default.Edit, contentDescription = "Editar")
             }

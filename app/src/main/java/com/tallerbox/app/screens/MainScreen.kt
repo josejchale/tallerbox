@@ -1,29 +1,17 @@
 package com.tallerbox.app.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.tallerbox.app.db.AppDatabase
-import com.tallerbox.app.repository.usuario.UsuarioRepository
-import com.tallerbox.app.screens.outlet.SideMenu
-import com.tallerbox.app.screens.outlet.AppLayout
-import com.tallerbox.app.viewmodel.usuario.UsuarioViewModel
-import com.tallerbox.app.viewmodel.usuario.UsuarioViewModelFactory
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +19,7 @@ fun MainScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp),
+            .padding(20.dp, top = 50.dp,),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.Start
     ) {
