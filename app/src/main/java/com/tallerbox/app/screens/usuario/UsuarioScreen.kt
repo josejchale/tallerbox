@@ -25,6 +25,7 @@ import com.tallerbox.app.helper.parseFirma
 import com.tallerbox.app.viewmodel.usuario.UsuarioViewModel
 import com.tallerbox.app.viewmodel.usuario.UsuarioViewModelFactory
 import com.tallerbox.app.repository.usuario.UsuarioRepository
+import androidx.compose.material.icons.filled.Check
 
 @Composable
 fun UsuarioPerfil() {
@@ -56,22 +57,28 @@ fun UsuarioPerfil() {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp)
-            .padding(top = 80.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            IconButton(onClick = { editable = !editable }) {
-                Icon(Icons.Default.Edit, contentDescription = "Editar")
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { editable = !editable }
+            ) {
+                Icon(
+                    imageVector = if (editable) Icons.Default.Check else Icons.Default.Edit,
+                    contentDescription = "Editar"
+                )
             }
         }
+
+    ) { padding ->
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 20.dp)
+                .padding(top = 80.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
 
         // ---------------- CAMPO: Nombre ----------------
         if (editable) {
@@ -181,23 +188,6 @@ fun UsuarioPerfil() {
                 }
             }
 
-            // ----------- SI YA EXISTE → ACTUALIZAR ----------------
-            else {
-                Button(
-                    onClick = {
-                        vm.actualizar(
-                            usuario!!.copy(
-                                nombre = nombre,
-                                firmaBase64 = firmaBase64
-                            )
-                        )
-                        editable = false
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Guardar Cambios")
-                }
-            }
         }
     }
 
@@ -225,4 +215,6 @@ fun UsuarioPerfil() {
             }
         )
     }
+    }
 }
+
