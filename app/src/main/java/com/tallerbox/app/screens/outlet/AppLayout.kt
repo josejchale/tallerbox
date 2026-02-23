@@ -15,6 +15,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,28 +23,21 @@ import kotlinx.coroutines.launch
 fun AppLayout(
     drawerState: DrawerState,
     sideMenu: @Composable () -> Unit,
+    navController: NavHostController,
     content: @Composable (PaddingValues) -> Unit
 ) {
+    val scope = rememberCoroutineScope()
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = { sideMenu() }
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text("TallerBox") },
-                    navigationIcon = {
-                        val scope = rememberCoroutineScope()
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Abrir menú")
-                        }
-                    }
-                )
-            },
-            modifier = Modifier.fillMaxSize(),
-            content = { innerPadding ->
-                content(innerPadding)
+                TopBar(drawerState, scope, navController)
             }
-        )
+        ) { innerPadding ->
+            content(innerPadding)
+        }
     }
 }
