@@ -17,6 +17,8 @@ material-icons-extended = "1.1.0"
 foundation = "1.9.2"
 runtime = "1.10.1"
 material3 = "1.4.0"
+runtimeVersion = "1.10.3"
+uiGraphics = "1.10.3"
 
 [libraries]
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version = "2.7.3" }
@@ -51,6 +53,8 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtimeVersion" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
 
 
 [plugins]
