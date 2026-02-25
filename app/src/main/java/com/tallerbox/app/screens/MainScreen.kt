@@ -54,6 +54,14 @@ fun MainScreen(navController: NavController) {
                 Text("Nueva Orden")
             }
 
+        }
+        Text("Ordenes de servicio", style = MaterialTheme.typography.titleMedium)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             MetricCard( title = "Pendientes", value = "1", textColor = Red )
             MetricCard( title = "En proceso", value = "31",  textColor = Black )
             MetricCard( title = "Completados", value = "12", textColor = Green )
