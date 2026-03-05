@@ -24,7 +24,7 @@ fun MainScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp, top = 50.dp,),
+            .padding(20.dp, top = 100.dp,),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.Start
     ) {
