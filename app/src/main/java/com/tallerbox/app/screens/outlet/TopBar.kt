@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.tallerbox.app.navigation.routeTitles
@@ -29,7 +30,7 @@ fun TopBar(
     val title = routeTitles[route] ?: "TallerBox"
 
     TopAppBar(
-        title = { Text(title) },
+        title = { Text(text=title,fontWeight = FontWeight.Bold,) },
         navigationIcon = {
             IconButton(onClick = { scope.launch { drawerState.open() } }) {
                 Icon(Icons.Default.Menu, contentDescription = "Abrir menú")

@@ -13,14 +13,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.Green
 import androidx.compose.ui.graphics.Color.Companion.Red
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.tallerbox.app.components.MetricCard.MetricCard
+import com.tallerbox.app.db.AppDatabase
+import com.tallerbox.app.repository.orden.OrdenRepository
+import com.tallerbox.app.viewmodel.orden.OrdenViewModel
+import com.tallerbox.app.viewmodel.orden.OrdenViewModelFactory
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(navController: NavController) {
+    val context = LocalContext.current
+    val db = AppDatabase.getDatabase(context)
+    val repo = OrdenRepository(db.ordenServicioDao())
+
+    val viewModel: OrdenViewModel = viewModel(
+        factory = OrdenViewModelFactory(repo)
+    )
+    val pendientes: Int by viewModel.pendientes.collectAsState()
+    val enProceso: Int by viewModel.enProceso.collectAsState()
+    val completados: Int by viewModel.completados.collectAsState()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -62,9 +78,9 @@ fun MainScreen(navController: NavController) {
                 .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            MetricCard( title = "Pendientes", value = "1", textColor = Red )
-            MetricCard( title = "En proceso", value = "31",  textColor = Black )
-            MetricCard( title = "Completados", value = "12", textColor = Green )
+            MetricCard( title = "Pendientes", value = pendientes.toString(), textColor = Red )
+            MetricCard( title = "En proceso", value = enProceso.toString(),  textColor = Black )
+            MetricCard( title = "Completados", value = completados.toString(), textColor = Green )
         }
     }
 }

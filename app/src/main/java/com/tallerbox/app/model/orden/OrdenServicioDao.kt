@@ -52,4 +52,8 @@ interface OrdenServicioDao {
         fechaEntregaReal: Date?,
         entrega: String
     )
+
+    //CONSULTAR POR ESTADO DE LA ORDEN
+    @Query("SELECT COUNT(*) FROM orden_servicio WHERE estadoOrden = :estado")
+    fun contarPorEstadoFlow(estado: String): Flow<Int>
 }

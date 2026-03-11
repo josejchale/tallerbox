@@ -66,7 +66,15 @@ class OrdenViewModel(private val repo: OrdenRepository) : ViewModel() {
             onComplete?.invoke()
         }
     }
+    //CONTAR POR ESTADO
+    val pendientes: StateFlow<Int> =
+        repo.contarPendientes().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    val enProceso: StateFlow<Int> =
+        repo.contarEnProceso().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    val completados: StateFlow<Int> =
+        repo.contarCompletados().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
     //Generador de PDF
 
     fun generarPdf(

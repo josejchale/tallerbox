@@ -38,4 +38,9 @@ class OrdenRepository(private val ordenDao: OrdenServicioDao) {
 
     suspend fun eliminar(orden: OrdenServicioEntity) =
         ordenDao.eliminar(orden)
+
+    // CONTAR POR ESTADO
+    fun contarPendientes() = ordenDao.contarPorEstadoFlow("PENDIENTE")
+    fun contarEnProceso() = ordenDao.contarPorEstadoFlow("EN PROCESO")
+    fun contarCompletados() = ordenDao.contarPorEstadoFlow("COMPLETADA")
 }
