@@ -21,6 +21,7 @@ import com.tallerbox.app.screens.orden.RegistroOrdenScreen
 import com.tallerbox.app.screens.orden.ListaOrdenesScreen
 import com.tallerbox.app.screens.orden.DetalleOrdenScreen
 import com.tallerbox.app.screens.orden.EditarOrdenScreen
+import com.tallerbox.app.screens.pos.POSScreen
 import com.tallerbox.app.screens.usuario.UsuarioPerfil
 
 @Composable
@@ -129,6 +130,13 @@ fun AppNavigation(navController: NavHostController) {
                 ?: error("ordenId es obligatorio en la ruta")
 
             EditarOrdenScreen(navController, ordenId)
+        }
+
+        //POS
+
+        //Vista principal del POS
+        composable ("pos-screen"){
+            POSScreen()
         }
 
     }
