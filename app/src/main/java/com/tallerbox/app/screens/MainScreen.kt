@@ -1,6 +1,5 @@
 package com.tallerbox.app.screens
 
-import android.graphics.Color
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -17,7 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.tallerbox.app.components.MetricCard.MetricCard
+import com.tallerbox.app.components.metric_card.MetricCard
 import com.tallerbox.app.db.AppDatabase
 import com.tallerbox.app.repository.orden.OrdenRepository
 import com.tallerbox.app.viewmodel.orden.OrdenViewModel

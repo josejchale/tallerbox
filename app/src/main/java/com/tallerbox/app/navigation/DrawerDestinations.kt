@@ -19,5 +19,5 @@ val drawerDestinations = listOf(
     DrawerDestination("Clientes", "lista_clientes", Icons.Filled.Person),
     DrawerDestination("Vehículos", "lista_vehiculo", Icons.Filled.TwoWheeler),
     DrawerDestination("Ordenes de Servicio", "lista_ordenes", Icons.AutoMirrored.Filled.Assignment),
-    DrawerDestination("pos", "pos-screen", Icons.Filled.Store)
+    DrawerDestination("Punto de Venta", "pos-screen", Icons.Filled.Store)
 )

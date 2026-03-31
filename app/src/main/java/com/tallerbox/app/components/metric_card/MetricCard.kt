@@ -1,4 +1,4 @@
-package com.tallerbox.app.components.MetricCard
+package com.tallerbox.app.components.metric_card
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
