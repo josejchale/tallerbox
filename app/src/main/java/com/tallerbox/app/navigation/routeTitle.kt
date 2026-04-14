@@ -13,5 +13,9 @@ val routeTitles = mapOf(
     "lista_ordenes" to "Lista de Órdenes",
     "detalle_orden/{ordenId}" to "Detalle de Orden",
     "editar_orden/{ordenId}" to "Editar Orden",
-    "pos-screen" to "Punto de venta"
+    "pos-screen" to "Punto de venta",
+    "productos" to "Productos",
+    "inventario" to "Inventario",
+    "ofertas" to "Ofertas",
+    "ventas" to "Ventas"
 )

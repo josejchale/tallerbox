@@ -2,8 +2,10 @@ package com.tallerbox.app.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.filled.Discount
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.icons.filled.Percent
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Receipt
@@ -41,9 +43,10 @@ val drawerSections = listOf(
         title = "Punto de Venta",
         items = listOf(
             DrawerDestination("Punto de Venta", "pos-screen", Icons.Filled.Store),
-            DrawerDestination("Productos", "main", Icons.Filled.QrCodeScanner),
-            DrawerDestination("Inventario", "main", Icons.Filled.Inventory),
-            DrawerDestination("Ventas", "main", Icons.Filled.Receipt),
+            DrawerDestination("Productos", "productos", Icons.Filled.QrCodeScanner),
+            DrawerDestination("Inventario", "inventario", Icons.Filled.Inventory),
+            DrawerDestination("Ventas", "ventas", Icons.Filled.Receipt),
+            DrawerDestination("Ofertas", "ofertas", Icons.Filled.Percent)
         )
     )
 )

@@ -30,7 +30,6 @@ fun SideMenu(
         modifier = Modifier.padding(WindowInsets.statusBars.asPaddingValues())
     ) {
 
-        // 🔹 Header usuario
         Row(
             modifier = Modifier
                 .fillMaxWidth()

@@ -21,8 +21,16 @@ import com.tallerbox.app.screens.orden.RegistroOrdenScreen
 import com.tallerbox.app.screens.orden.ListaOrdenesScreen
 import com.tallerbox.app.screens.orden.DetalleOrdenScreen
 import com.tallerbox.app.screens.orden.EditarOrdenScreen
-import com.tallerbox.app.screens.pos.POSScreen
 import com.tallerbox.app.screens.usuario.UsuarioPerfil
+
+//POS
+import com.tallerbox.app.screens.pos.POSScreen
+import com.tallerbox.app.screens.pos.Productos
+import com.tallerbox.app.screens.pos.Inventario
+import com.tallerbox.app.screens.pos.Ventas
+import com.tallerbox.app.screens.pos.Ofertas
+
+
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -137,6 +145,22 @@ fun AppNavigation(navController: NavHostController) {
         //Vista principal del POS
         composable ("pos-screen"){
             POSScreen()
+        }
+
+        composable ("productos"){
+            Productos()
+        }
+
+        composable ("inventario"){
+            Inventario()
+        }
+
+        composable ("ofertas"){
+            Ofertas()
+        }
+
+        composable ("ventas"){
+            Ventas()
         }
 
     }
