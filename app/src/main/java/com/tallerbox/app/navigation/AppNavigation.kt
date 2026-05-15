@@ -25,10 +25,10 @@ import com.tallerbox.app.screens.usuario.UsuarioPerfil
 
 //POS
 import com.tallerbox.app.screens.pos.POSScreen
-import com.tallerbox.app.screens.pos.Productos
-import com.tallerbox.app.screens.pos.Inventario
+import com.tallerbox.app.screens.pos.productos.Productos
+import com.tallerbox.app.screens.pos.inventario.Inventario
 import com.tallerbox.app.screens.pos.Ventas
-import com.tallerbox.app.screens.pos.Ofertas
+import com.tallerbox.app.screens.pos.ofertas.Ofertas
 
 
 

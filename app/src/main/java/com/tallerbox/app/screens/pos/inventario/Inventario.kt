@@ -1,4 +1,4 @@
-package com.tallerbox.app.screens.pos
+package com.tallerbox.app.screens.pos.inventario
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,15 +12,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Ofertas(){
+fun Inventario(){
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp, top = 100.dp,),
+            .padding(20.dp, top = 100.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.Start
     ){
-        Text("Ofertas", style = MaterialTheme.typography.titleMedium)
+        Text("Inventario", style = MaterialTheme.typography.titleMedium)
 
     }
 }
