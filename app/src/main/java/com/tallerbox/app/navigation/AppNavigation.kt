@@ -27,7 +27,7 @@ import com.tallerbox.app.screens.usuario.UsuarioPerfil
 import com.tallerbox.app.screens.pos.POSScreen
 import com.tallerbox.app.screens.pos.productos.Productos
 import com.tallerbox.app.screens.pos.inventario.Inventario
-import com.tallerbox.app.screens.pos.Ventas
+import com.tallerbox.app.screens.pos.ventas.Ventas
 import com.tallerbox.app.screens.pos.ofertas.Ofertas
 
 

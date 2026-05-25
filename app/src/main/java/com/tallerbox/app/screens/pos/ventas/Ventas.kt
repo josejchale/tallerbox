@@ -1,4 +1,4 @@
-package com.tallerbox.app.screens.pos
+package com.tallerbox.app.screens.pos.ventas
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
