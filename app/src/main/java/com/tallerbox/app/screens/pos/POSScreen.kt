@@ -55,6 +55,11 @@ fun POSScreen(){
                 // Text("Nuevo Cliente")
             }
 
+            Button(onClick = {  }) {
+                Icon(Icons.Filled.Search, contentDescription = "ListAlt", modifier = Modifier.size(20.dp))
+                //Spacer(modifier = Modifier.width(8.dp))
+                // Text("Nuevo Cliente")
+            }
 
         }
     }
