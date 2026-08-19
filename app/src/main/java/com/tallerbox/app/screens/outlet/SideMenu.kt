@@ -2,6 +2,8 @@ package com.tallerbox.app.screens.outlet
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -23,13 +25,13 @@ fun SideMenu(
     usuario: UsuarioEntity?,
     scope: CoroutineScope
 ) {
-
     val currentRoute = navController.currentBackStackEntry?.destination?.route
 
     ModalDrawerSheet(
-        modifier = Modifier.padding(WindowInsets.statusBars.asPaddingValues())
+        modifier = Modifier
+            .padding(WindowInsets.statusBars.asPaddingValues())
+            .verticalScroll(rememberScrollState())
     ) {
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -67,9 +69,7 @@ fun SideMenu(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
-
         drawerSections.forEach { section ->
-
             Text(
                 text = section.title,
                 style = MaterialTheme.typography.labelLarge,
