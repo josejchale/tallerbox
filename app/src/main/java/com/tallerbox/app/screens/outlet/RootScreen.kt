@@ -16,7 +16,6 @@ import com.tallerbox.app.viewmodel.usuario.UsuarioViewModel
 import com.tallerbox.app.viewmodel.usuario.UsuarioViewModelFactory
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.platform.LocalContext
-import com.tallerbox.app.model.usuario.UsuarioEntity
 import com.tallerbox.app.navigation.AppNavigation
 
 @Composable
@@ -35,7 +34,7 @@ fun RootScreen(navController: NavHostController = rememberNavController()) {
             SideMenu(navController, drawerState, usuario, scope)
         },
         navController = navController,
-        content = { innerPadding: PaddingValues ->
+        content = { _: PaddingValues ->
             AppNavigation(navController = navController)
         }
     )

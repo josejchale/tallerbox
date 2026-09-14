@@ -30,6 +30,7 @@ fun SideMenu(
     ModalDrawerSheet(
         modifier = Modifier
             .padding(WindowInsets.statusBars.asPaddingValues())
+            .fillMaxHeight()
             .verticalScroll(rememberScrollState())
     ) {
         Row(
